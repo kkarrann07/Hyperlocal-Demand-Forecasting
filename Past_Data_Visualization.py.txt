@@ -1,0 +1,68 @@
+import streamlit as st
+import pandas as pd
+from prophet import Prophet
+import plotly.graph_objects as go
+
+# FIXED PATH: Your GitHub Excel file
+@st.cache_data
+def load_data():
+    return pd.read_excel("hyperlocal_demand_forecasting_with_grocery_items-2.xlsx")
+
+data = load_data()
+data['Month'] = pd.to_datetime(data['Month'])
+
+# Months list
+months_list = ['January', 'February', 'March', 'April', 'May', 'June', 
+               'July', 'August', 'September', 'October', 'November', 'December']
+
+# Inputs
+st.sidebar.title("Past Data Analysis")
+selected_month = st.sidebar.selectbox("Month", months_list)
+selected_product = st.sidebar.selectbox("Product", data['Product Name'].unique())
+
+# Filter data
+monthly_data = data[(data['Product Name'] == selected_product) & 
+                   (data['Month'].dt.strftime('%B') == selected_month)].copy()
+monthly_data['Month_str'] = monthly_data['Month'].dt.strftime('%B')
+
+if not monthly_data.empty:
+    total_stock = monthly_data['Monthly_Stock'].sum()
+    total_sales = monthly_data['Monthly_Sales'].sum()
+    
+    # Prophet prediction (next month)
+    df = monthly_data[['Month', 'Monthly_Sales']].rename(columns={'Month': 'ds', 'Monthly_Sales': 'y'})
+    model = Prophet()
+    model.fit(df)
+    future = model.make_future_dataframe(periods=1, freq='M')
+    forecast = model.predict(future)
+    predicted = forecast['yhat'].iloc[-1].round(0)
+    
+    # Metrics
+    col1, col2, col3 = st.columns(3)
+    col1.metric("Sales", total_sales)
+    col2.metric("Stock", total_stock)
+    col3.metric("Next Month Prediction", predicted)
+    
+    # Charts
+    st.subheader(f"📊 {selected_product} - {selected_month}")
+    
+    # 1. Bar: Sales vs Stock
+    fig_bar = go.Figure([go.Bar(x=['Sales', 'Stock'], y=[total_sales, total_stock], 
+                               marker_color=['blue', 'orange'])])
+    fig_bar.update_layout(title='Sales vs Stock', xaxis_title='Category', yaxis_title='Amount')
+    st.plotly_chart(fig_bar, use_container_width=True)
+    
+    # 2. Pie: Distribution
+    fig_pie = go.Figure([go.Pie(labels=['Sales', 'Stock'], values=[total_sales, total_stock])])
+    fig_pie.update_layout(title='Sales vs Stock Distribution')
+    st.plotly_chart(fig_pie, use_container_width=True)
+    
+    # 3. Summary table
+    summary = pd.DataFrame({
+        'Metric': ['Total Sales', 'Total Stock', 'Next Month Prediction'],
+        'Value': [total_sales, total_stock, predicted]
+    }).round(0).astype(int)
+    st.table(summary)
+    
+else:
+    st.error(f"No data for {selected_product} in {selected_month}")
