@@ -1,9 +1,7 @@
-streamlit==1.38.0
-pandas==2.2.2
-plotly==5.22.0
-openpyxl==3.1.2
-numpy==1.26.4
-scikit-learn==1.5.1
-prophet==1.1.5
-pystan==3.9
-cmdstanpy==1.2.1
+streamlit
+pandas
+plotly
+openpyxl
+numpy
+scikit-learn
+statsmodels
