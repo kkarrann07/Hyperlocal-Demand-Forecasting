@@ -2,52 +2,80 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+from pathlib import Path
 
-# FIXED PATH: Your GitHub Excel file
+# Excel file is in the same folder as this script (pages/)
+DATA_PATH = Path(__file__).parent / "hyperlocal_demand_forecasting_with_grocery_items (2).xlsx"
+
 @st.cache_data
 def load_data():
-    return pd.read_excel("hyperlocal_demand_forecasting_with_grocery_items-2.xlsx")
+    df = pd.read_excel(str(DATA_PATH))
+    df["Month"] = pd.to_datetime(df["Month"])
+    return df
 
 data = load_data()
-data['Month'] = pd.to_datetime(data['Month'])
 
 # Months list
-months_list = ['January', 'February', 'March', 'April', 'May', 'June', 
-               'July', 'August', 'September', 'October', 'November', 'December']
+months_list = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+]
 
 # Sidebar inputs
 st.sidebar.title("Past Sales Analysis")
 selected_month = st.sidebar.selectbox("Month", months_list)
-selected_product = st.sidebar.selectbox("Product", data['Product Name'].unique())
+selected_product = st.sidebar.selectbox("Product", data["Product Name"].unique())
 
 # Filter month data
-month_data = data[data['Month'].dt.strftime('%B') == selected_month]
+month_data = data[data["Month"].dt.strftime("%B") == selected_month]
 
 # Bar chart: All products in month (highlight selected)
 if not month_data.empty:
     fig = go.Figure()
-    for product in month_data['Product Name'].unique():
-        color = 'blue' if product == selected_product else 'lightgray'
-        opacity = 1 if product == selected_product else 0.5
-        sales = month_data[month_data['Product Name'] == product]['Monthly_Sales'].sum()
-        fig.add_trace(go.Bar(x=[product], y=[sales], name=product, 
-                            marker_color=color, opacity=opacity, width=0.4))
-    
-    fig.update_layout(title=f"📊 {selected_month} Sales: All Products", 
-                      xaxis_title='Product', yaxis_title='Total Sales', showlegend=False)
+    for product in month_data["Product Name"].unique():
+        color = "blue" if product == selected_product else "lightgray"
+        opacity = 1.0 if product == selected_product else 0.5
+        sales = month_data[month_data["Product Name"] == product]["Monthly_Sales"].sum()
+        fig.add_trace(
+            go.Bar(
+                x=[product],
+                y=[sales],
+                name=product,
+                marker_color=color,
+                opacity=opacity,
+                width=0.4,
+            )
+        )
+
+    fig.update_layout(
+        title=f"📊 {selected_month} Sales: All Products",
+        xaxis_title="Product",
+        yaxis_title="Total Sales",
+        showlegend=False,
+    )
     st.plotly_chart(fig, use_container_width=True)
 
 # Trend: Selected product last year
 st.subheader(f"📈 {selected_product} - Last Year Trend")
-last_year_data = data[data['Month'].dt.year == data['Month'].dt.year.max()]
-product_trend = last_year_data[last_year_data['Product Name'] == selected_product]
+last_year = data["Month"].dt.year.max()
+last_year_data = data[data["Month"].dt.year == last_year]
+product_trend = last_year_data[last_year_data["Product Name"] == selected_product]
 
-fig_trend = px.line(product_trend, x='Month', y='Monthly_Sales', 
-                   title=f"{selected_product} Sales Trend (Last Year)",
-                   labels={'Monthly_Sales': 'Sales', 'Month': 'Month'})
+fig_trend = px.line(
+    product_trend,
+    x="Month",
+    y="Monthly_Sales",
+    title=f"{selected_product} Sales Trend ({last_year})",
+    labels={"Monthly_Sales": "Sales", "Month": "Month"},
+)
 st.plotly_chart(fig_trend, use_container_width=True)
 
 # Summary table
 st.subheader(f"{selected_month} Summary")
-month_summary = month_data.groupby('Product Name')['Monthly_Sales'].sum().round(0).astype(int)
+month_summary = (
+    month_data.groupby("Product Name")["Monthly_Sales"]
+    .sum()
+    .round(0)
+    .astype(int)
+)
 st.dataframe(month_summary)
