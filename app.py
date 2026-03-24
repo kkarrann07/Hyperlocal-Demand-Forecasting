@@ -1,19 +1,33 @@
 import streamlit as st
 
-st.set_page_config(page_title="Hyperlocal Demand Forecasting App")
-
-st.title("🛒 Hyperlocal Demand Forecasting App")
-st.write("Select a page from the sidebar 👇")
-
-# Sidebar page links
-st.sidebar.title("Navigation")
-
-# Do NOT link to app.py itself – it's already the current page.
-# Just link to the other scripts that live in the SAME folder.
-st.sidebar.page_link("Future_Prediction.py", label="📈 Future Prediction")
-st.sidebar.page_link("Past_Data.py", label="📊 Past Data")
-st.sidebar.page_link(
-    "Past_Data_Visualization.py",
-    label="📉 Past Data Visualization",
+# Page config (applies to entire app)
+st.set_page_config(
+    page_title="🛒 Hyperlocal Demand Forecasting",
+    page_icon="🛒",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
-st.sidebar.page_link("Forecasting.py", label="📊 Forecasting Dashboard")
+
+# Header
+st.title("🛒 Hyperlocal Demand Forecasting Dashboard")
+st.markdown("### Your complete solution for grocery demand prediction")
+
+# Hero section
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    st.markdown("""
+    **🚀 Features:**
+    - Future demand predictions using Prophet
+    - Historical data analysis & visualization
+    - Interactive forecasting dashboard
+    - Hyperlocal grocery insights
+    """)
+
+# Instructions
+st.markdown("---")
+st.info("👈 **Click any page in the sidebar** to explore the app")
+st.caption("📊 Pages: Future Prediction | Past Data | Visualization | Forecasting")
+
+# Footer
+st.markdown("---")
+st.markdown("Built with ❤️ using Streamlit + Prophet")
