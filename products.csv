@@ -1,0 +1,11 @@
+product_id,seller_name,product_name,price,current_stock,reorder_level
+1,Raj Kirana Store,Bread,40,50,20
+2,Raj Kirana Store,Milk,55,30,15
+3,Raj Kirana Store,Butter,90,10,5
+4,Sharma Supermart,Rice,60,80,30
+5,Sharma Supermart,Atta,45,70,25
+6,Gupta Fresh Fruits,Apple,120,25,10
+7,Gupta Fresh Fruits,Banana,60,40,15
+8,Sharma Supermart,Oil,180,20,10
+9,Raj Kirana Store,Eggs,75,12,6
+10,Gupta Fresh Fruits,Orange,110,30,12
