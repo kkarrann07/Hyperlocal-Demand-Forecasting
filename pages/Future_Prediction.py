@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 from pathlib import Path
 
-# Optional: voice input
+# Optional: voice input (streamlit-mic-recorder must be in requirements.txt)
 try:
     from streamlit_mic_recorder import speech_to_text
     MIC_AVAILABLE = True
@@ -25,7 +25,9 @@ def load_data():
 df = load_data()
 products = sorted(df["Product Name"].unique())
 
-# ---------- PRODUCT SELECTION + VOICE QUERY ---------------------------------
+# --------------------------------------------------------------------------- #
+# PRODUCT SELECTION + VOICE QUERY
+# --------------------------------------------------------------------------- #
 col_manual, col_voice = st.columns(2)
 
 with col_manual:
@@ -81,44 +83,92 @@ with col_voice:
             "`streamlit-mic-recorder` in requirements.txt."
         )
 
-# ---------- BUILD TIME SERIES FOR SELECTED PRODUCT -------------------------
+# --------------------------------------------------------------------------- #
+# HISTORICAL DATA + PRODUCT SUMMARY
+# --------------------------------------------------------------------------- #
 prod_df = (
     df[df["Product Name"] == product][["Month", "Monthly_Sales"]]
     .sort_values("Month")
     .set_index("Month")
 )
 
-st.subheader(f"📈 Historical Monthly Sales – {product}")
-st.line_chart(prod_df["Monthly_Sales"])
+avg_hist = prod_df["Monthly_Sales"].mean()
+max_hist = prod_df["Monthly_Sales"].max()
+peak_month_hist = prod_df["Monthly_Sales"].idxmax()
 
+chart_col, summary_col = st.columns([3, 1])
+
+with chart_col:
+    st.markdown(
+        "_Blue line below shows historical monthly sales. "
+        "When you forecast, a dotted line will show the next 12 months._"
+    )
+    st.subheader(f"📈 Historical Monthly Sales – {product}")
+    st.line_chart(prod_df["Monthly_Sales"])
+
+with summary_col:
+    st.markdown("##### Product summary")
+    st.markdown(
+        f"""
+- **Avg monthly sales:** `{avg_hist:,.0f}`
+- **Max monthly sales:** `{max_hist:,.0f}`
+- **Peak month:** `{peak_month_hist.strftime('%b %Y')}`
+"""
+    )
+
+# --------------------------------------------------------------------------- #
+# FORECAST FUNCTION
+# --------------------------------------------------------------------------- #
 def run_forecast(selected_product: str):
-    series = (
-        df[df["Product Name"] == selected_product]
+    prod_ts = (
+        df[df["Product Name"] == selected_product][["Month", "Monthly_Sales"]]
         .sort_values("Month")
         .set_index("Month")["Monthly_Sales"]
     )
 
-    model = ExponentialSmoothing(
-        series,
-        trend="add",
-        seasonal="add",
-        seasonal_periods=12,
-    ).fit()
+    with st.spinner("Training forecasting model and generating 12‑month forecast..."):
+        model = ExponentialSmoothing(
+            prod_ts,
+            trend="add",
+            seasonal="add",
+            seasonal_periods=12,
+        ).fit()
 
-    forecast_horizon = 12
-    forecast = model.forecast(forecast_horizon)
+        forecast_horizon = 12
+        forecast = model.forecast(forecast_horizon)
 
-    future_index = pd.date_range(
-        start=series.index[-1],
-        periods=forecast_horizon + 1,
-        freq="M",
-    )[1:]
+        future_index = pd.date_range(
+            start=prod_ts.index[-1],
+            periods=forecast_horizon + 1,
+            freq="M",
+        )[1:]
 
+        # Key forecast numbers
+        next_month_value = float(forecast.iloc[0])
+        total_forecast = float(forecast.sum())
+        max_idx = int(forecast.argmax())
+        max_month_value = float(forecast.iloc[max_idx])
+        max_month_date = future_index[max_idx]
+
+    # Metrics row
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Next Month Forecast", f"₹{next_month_value:,.0f}")
+    m2.metric(
+        "Peak Monthly Forecast (12m)",
+        f"₹{max_month_value:,.0f}",
+        help=f"Expected peak in {max_month_date.strftime('%b %Y')}",
+    )
+    m3.metric(
+        "Total Forecast (next 12 months)",
+        f"₹{total_forecast:,.0f}",
+    )
+
+    # Plot historical + forecast
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
-            x=series.index,
-            y=series.values,
+            x=prod_ts.index,
+            y=prod_ts.values,
             name="Historical",
         )
     )
@@ -126,7 +176,7 @@ def run_forecast(selected_product: str):
         go.Scatter(
             x=future_index,
             y=forecast.values,
-            name="Forecast",
+            name="Forecast (next 12 months)",
             line=dict(dash="dash"),
         )
     )
@@ -136,16 +186,27 @@ def run_forecast(selected_product: str):
         xaxis_title="Month",
         yaxis_title="Sales",
     )
+
     st.plotly_chart(fig, use_container_width=True)
 
-    # First step of forecast ≈ "next month" prediction
-    next_month_pred = float(forecast.iloc[0])
-    st.metric(
-        "Next Month Forecast",
-        f"₹{next_month_pred:,.0f}",
+    # Prepare forecast DataFrame and download button
+    forecast_df = pd.DataFrame(
+        {
+            "Month": future_index,
+            "Forecast_Sales": forecast.values,
+        }
+    )
+    csv_data = forecast_df.to_csv(index=False).encode("utf-8")
+    st.download_button(
+        label="📥 Download 12‑month forecast as CSV",
+        data=csv_data,
+        file_name=f"{selected_product}_12_month_forecast.csv",
+        mime="text/csv",
     )
 
-# ---------- TRIGGERS: BUTTON OR VOICE --------------------------------------
+# --------------------------------------------------------------------------- #
+# TRIGGERS: BUTTON OR VOICE
+# --------------------------------------------------------------------------- #
 manual_clicked = st.button("Forecast Future")
 
 if manual_clicked:
