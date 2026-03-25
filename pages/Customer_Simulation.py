@@ -37,7 +37,6 @@ def save_orders(df: pd.DataFrame):
 
 # Initialize session_state cart
 if "cart" not in st.session_state:
-    # list of dicts: {product_id, product_name, seller_name, quantity, price}
     st.session_state.cart = []
 
 products_df = load_products()
@@ -96,21 +95,33 @@ with col3:
 
 if add_clicked:
     row = view_df[view_df["product_id"] == product_id].iloc[0]
-    st.session_state.cart.append(
-        {
-            "product_id": int(row["product_id"]),
-            "product_name": row["product_name"],
-            "seller_name": row["seller_name"],
-            "quantity": int(quantity),
-            "price": float(row["price"]),
-        }
-    )
-    st.success(f"Added {quantity} x {row['product_name']} to cart")
+    
+    # Check stock before adding
+    if row["current_stock"] < quantity:
+        st.error(f"❌ Not enough stock! Only {row['current_stock']} available.")
+    else:
+        st.session_state.cart.append(
+            {
+                "product_id": int(row["product_id"]),
+                "product_name": row["product_name"],
+                "seller_name": row["seller_name"],
+                "quantity": int(quantity),
+                "price": float(row["price"]),
+            }
+        )
+        
+        # REFRESH STOCK immediately
+        prod_row = products_df[products_df["product_id"] == row["product_id"]].index[0]
+        products_df.at[prod_row, "current_stock"] -= quantity
+        products_df.to_csv(PRODUCTS_CSV, index=False)
+        
+        st.success(f"✅ Added {quantity} x {row['product_name']} | Stock updated")
+        st.rerun()
 
 # ------------------------------------------------------------------ #
 # CART VIEW & PLACE ORDER
 # ------------------------------------------------------------------ #
-st.subheader("Cart")
+st.subheader("🛍️ Cart")
 
 if not st.session_state.cart:
     st.info("Cart is empty. Add some products above.")
@@ -125,8 +136,8 @@ else:
     total_amount = cart_df["total"].sum()
     st.write(f"**Cart total: ₹{total_amount:,.0f}**")
 
-    if st.button("Place order"):
-        # Generate new order IDs based on existing orders
+    if st.button("✅ Place order"):
+        # Generate new order IDs
         next_id_start = (
             int(orders_df["order_id"].max()) + 1 if not orders_df.empty else 1
         )
@@ -151,16 +162,16 @@ else:
         orders_df = pd.concat([orders_df, new_df], ignore_index=True)
         save_orders(orders_df)
 
-        # Optionally clear cart
+        # Clear cart
         st.session_state.cart = []
-
-        st.success("Order placed (simulated) and logged to orders.csv!")
-        st.dataframe(new_df, use_container_width=True)
+        
+        st.success("✅ Order placed! Stock updated across all products.")
+        st.rerun()
 
 # ------------------------------------------------------------------ #
-# OPTIONAL: VIEW PAST SIMULATED ORDERS
+# VIEW PAST ORDERS
 # ------------------------------------------------------------------ #
-with st.expander("View all simulated orders"):
+with st.expander("📋 View all simulated orders"):
     if orders_df.empty:
         st.info("No orders yet.")
     else:
