@@ -98,8 +98,7 @@ footer_left, footer_right = st.columns([3, 1])
 
 with footer_left:
     st.caption(
-        "🧑‍💻 Developed by a 2nd‑year B.Tech CSE student • Kanpur, UP • "
-        "Tech stack: Python, Streamlit, Prophet, statsmodels, Plo
+        """🧑‍💻 Developed by a 2nd‑year B.Tech CSE student • Kanpur, UP • Tech stack: Python, Streamlit, Prophet, statsmodels, Plotly"""
     )
 
 with footer_right:
