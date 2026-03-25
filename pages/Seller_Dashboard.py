@@ -5,9 +5,32 @@ from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
 st.header("📦 Seller Dashboard & Smart Reorder Suggestions")
 
-BASE_DIR = Path(__file__).parent.parent  # project root
+# Dynamic Excel path - works with BOTH root and /pages versions
+BASE_DIR = Path(__file__).parent.parent
+PAGES_DIR = Path(__file__).parent
+
 PRODUCTS_CSV = BASE_DIR / "products.csv"
-DEMAND_XLSX = BASE_DIR / "hyperlocal_demand_forecasting_with_grocery_items (2).xlsx"
+
+# Try multiple possible Excel names/paths
+EXCEL_PATHS = [
+    BASE_DIR / "hyperlocal_demand_forecasting_with_grocery_items-2.xlsx",
+    BASE_DIR / "hyperlocal_demand_forecasting_with_grocery_items (2).xlsx",
+    PAGES_DIR / "hyperlocal_demand_forecasting_with_grocery_items (2).xlsx",
+    BASE_DIR / "hyperlocal_demand_forecasting_with_grocery_items.xlsx"
+]
+
+DEMAND_XLSX = None
+for path in EXCEL_PATHS:
+    if path.exists():
+        DEMAND_XLSX = path
+        break
+
+if DEMAND_XLSX is None:
+    st.error("❌ Could not find demand Excel file. Expected names:")
+    for path in EXCEL_PATHS:
+        st.write(f"- {path}")
+    st.stop()
+
 @st.cache_data
 def load_products():
     return pd.read_csv(PRODUCTS_CSV)
@@ -21,7 +44,6 @@ def load_demand_data():
 products_df = load_products()
 demand_df = load_demand_data()
 
-# Helper: forecast next month's demand for a product
 def forecast_next_month(product_name: str) -> float:
     prod = (
         demand_df[demand_df["Product Name"] == product_name][
@@ -45,7 +67,6 @@ def forecast_next_month(product_name: str) -> float:
     except Exception:
         return 0.0
 
-# UI: Select seller
 sellers = sorted(products_df["seller_name"].unique().tolist())
 selected_seller = st.selectbox("Select seller", sellers)
 
@@ -57,7 +78,6 @@ if seller_products.empty:
 
 st.subheader(f"Products for {selected_seller}")
 
-# Compute forecast & reorder suggestions
 target_days_cover = st.number_input(
     "Target days of stock coverage", min_value=1, max_value=90, value=30, step=1
 )
@@ -69,20 +89,11 @@ for _, row in seller_products.iterrows():
     current_stock = float(row["current_stock"])
     reorder_level = float(row["reorder_level"])
 
-    # Forecast demand for next month
     next_month_forecast = forecast_next_month(product_name)
-
-    # Average daily demand
     avg_daily_demand = next_month_forecast / 30.0 if next_month_forecast > 0 else 0.0
-
-    # Days of cover
     days_of_cover = current_stock / avg_daily_demand if avg_daily_demand > 0 else float("inf")
-
-    # Suggested reorder
     target_stock = target_days_cover * avg_daily_demand
     suggested_reorder_qty = max(0.0, target_stock - current_stock)
-
-    # Low stock flag
     low_stock_flag = current_stock <= reorder_level
 
     rows.append(
@@ -99,10 +110,8 @@ for _, row in seller_products.iterrows():
     )
 
 result_df = pd.DataFrame(rows)
-
 st.dataframe(result_df, use_container_width=True)
 
-# Items needing attention
 st.subheader("🔁 Items needing attention")
 need_reorder = result_df[
     (result_df["Suggested reorder qty"] > 0) | (result_df["Low stock?"] == "Yes")
