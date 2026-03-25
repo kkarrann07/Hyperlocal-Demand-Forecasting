@@ -7,3 +7,4 @@ scikit-learn
 prophet
 cmdstanpy
 statsmodels
+streamlit-mic-recorder
