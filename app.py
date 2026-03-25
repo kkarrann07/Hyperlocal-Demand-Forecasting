@@ -36,7 +36,7 @@ with st.container():
 
         st.caption(
             "kothri kalan "
-            "Exponential Smoothing, and Plotly."
+            "vit bhopal"
         )
 
     with col_right:
