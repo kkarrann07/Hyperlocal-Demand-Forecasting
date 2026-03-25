@@ -8,7 +8,6 @@ st.header("📦 Seller Dashboard & Smart Reorder Suggestions")
 BASE_DIR = Path(__file__).parent.parent  # project root
 PRODUCTS_CSV = BASE_DIR / "products.csv"
 DEMAND_XLSX = BASE_DIR / "hyperlocal_demand_forecasting_with_grocery_items (2).xlsx"
-
 @st.cache_data
 def load_products():
     return pd.read_csv(PRODUCTS_CSV)
