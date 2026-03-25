@@ -35,7 +35,7 @@ with st.container():
         )
 
         st.caption(
-            "Built as a 2nd‑year B.Tech CSE project using Streamlit, Prophet, "
+            "kothri kalan "
             "Exponential Smoothing, and Plotly."
         )
 
