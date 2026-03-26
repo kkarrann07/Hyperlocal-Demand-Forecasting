@@ -25,12 +25,12 @@ for p in EXCEL_PATHS:
         break
 
 if DEMAND_XLSX is None:
-    st.error("❌ Demand Excel file not found. Tried:")
+    st.error("❌ Demand Excel file not found. Tried these paths:")
     for p in EXCEL_PATHS:
         st.write("-", p)
     st.stop()
 
-# ---------- LOAD DATA (NO CACHE) ----------
+# ---------- LOAD DATA (NO CACHE, ALWAYS FRESH) ----------
 def load_products():
     return pd.read_csv(PRODUCTS_CSV)
 
@@ -66,20 +66,10 @@ def forecast_next_month(product_name: str) -> float:
     except Exception:
         return 0.0
 
-# ---------- UI: SELECT SELLER + REFRESH BUTTON ----------
-col_sel, col_btn = st.columns([4, 1])
+# ---------- UI: SELECT SELLER ----------
+sellers = sorted(products_df["seller_name"].unique().tolist())
+selected_seller = st.selectbox("Select seller", sellers)
 
-with col_sel:
-    sellers = sorted(products_df["seller_name"].unique().tolist())
-    selected_seller = st.selectbox("Select seller", sellers)
-
-with col_btn:
-    if st.button("🔄 Reload latest stock"):
-        # re-read CSV and rerun page
-        st.experimental_rerun()
-
-# Re-load products after possible reload
-products_df = load_products()
 seller_products = products_df[products_df["seller_name"] == selected_seller].copy()
 
 if seller_products.empty:
