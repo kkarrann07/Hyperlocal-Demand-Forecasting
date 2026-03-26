@@ -41,9 +41,6 @@ def load_demand_data():
     df["Month"] = pd.to_datetime(df["Month"])
     return df
 
-products_df = load_products()
-demand_df = load_demand_data()
-
 def forecast_next_month(product_name: str) -> float:
     prod = (
         demand_df[demand_df["Product Name"] == product_name][
@@ -67,14 +64,35 @@ def forecast_next_month(product_name: str) -> float:
     except Exception:
         return 0.0
 
-sellers = sorted(products_df["seller_name"].unique().tolist())
-selected_seller = st.selectbox("Select seller", sellers)
+# Seller selection + LIVE REFRESH
+col1, col2 = st.columns([4, 1])
+with col1:
+    sellers = sorted(load_products()["seller_name"].unique().tolist())
+    selected_seller = st.selectbox("Select seller", sellers)
 
-seller_products = products_df[products_df["seller_name"] == selected_seller].copy()
+with col2:
+    if st.button("🔄 Refresh Live Stock", type="secondary", help="Reloads latest products.csv from customer orders"):
+        st.cache_data.clear()
+        st.rerun()
+
+seller_products = load_products()[load_products()["seller_name"] == selected_seller].copy()
+demand_df = load_demand_data()
 
 if seller_products.empty:
     st.warning("No products found for this seller.")
     st.stop()
+
+# SELLER METRICS (LIVE)
+col1, col2, col3 = st.columns(3)
+total_value = (seller_products['price'] * seller_products['current_stock']).sum()
+low_stock_count = len(seller_products[seller_products['current_stock'] <= seller_products['reorder_level']])
+
+with col1:
+    st.metric("💰 Inventory Value", f"₹{int(total_value):,}")
+with col2:
+    st.metric("📦 Items", len(seller_products))
+with col3:
+    st.metric("⚠️ Low Stock", low_stock_count)
 
 st.subheader(f"Products for {selected_seller}")
 
@@ -117,6 +135,6 @@ need_reorder = result_df[
     (result_df["Suggested reorder qty"] > 0) | (result_df["Low stock?"] == "Yes")
 ]
 if need_reorder.empty:
-    st.info("No immediate reorder suggestions.")
+    st.info("✅ All products have sufficient stock for target coverage.")
 else:
     st.dataframe(need_reorder, use_container_width=True)
