@@ -3,9 +3,33 @@ import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
 
-st.set_page_config(page_title="🛒 Hyperlocal Demand Forecasting", page_icon="🛒", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="🛒 Hyperlocal Demand Forecasting", page_icon="🛒", layout="wide", initial_sidebar_state="collapsed")
 
-# Demo data
+# Inject CSS animations
+st.markdown("""
+<style>
+.glow { 
+    box-shadow: 0 0 20px rgba(16,185,129,0.5); 
+    animation: pulse-glow 2s infinite; 
+}
+@keyframes pulse-glow {
+    0% { box-shadow: 0 0 20px rgba(16,185,129,0.5); }
+    50% { box-shadow: 0 0 30px rgba(16,185,129,0.8); }
+    100% { box-shadow: 0 0 20px rgba(16,185,129,0.5); }
+}
+.metric-glow {
+    background: linear-gradient(45deg, #10B981, #059669);
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shimmer 3s infinite;
+}
+@keyframes shimmer {
+    0% { background-position: 0%; }
+    100% { background-position: 200%; }
+}
+</style>
+""", unsafe_allow_html=True)
+
 @st.cache_data
 def get_data():
     months = pd.date_range('2023-01-01', periods=24, freq='MS')
@@ -14,28 +38,7 @@ def get_data():
 
 df = get_data()
 
-# === CATCHY SIDEBAR (FILLS LEFT EMPTY SPACE) ===
-with st.sidebar:
-    st.markdown("## 🎯 Quick Actions")
-    st.button("🔮 Jump to Forecast", type="primary")
-    st.button("🧪 Try Simulation")
-    st.markdown("---")
-    
-    st.markdown("### 📊 Live Stats")
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric("Data Points", f"{len(df):,}", "↑24%")
-        st.metric("Avg Sales", f"₹{df['Monthly_Sales'].mean():.0f}", "↑12%")
-    with col2:
-        st.metric("Peak Month", "Jul", "Hot season")
-        st.metric("Forecast", "6 mo.", "Ready")
-    
-    st.markdown("---")
-    st.markdown("[![Star](https://img.shields.io/github/stars/kkarrann07/Hyperlocal-Demand-Forecasting?style=social)](https://github.com/kkarrann07/Hyperlocal-Demand-Forecasting)")
-    st.markdown("*2nd Year B.Tech CSE • Kanpur 🇮🇳*")
-    st.caption("v3.1 • Mar 2026")
-
-# === HERO (SAME - WORKING PERFECT) ===
+# === HERO WITH ANIMATED RIGHT COLUMN ===
 col_left, col_right = st.columns([2, 1])
 
 with col_left:
@@ -45,20 +48,22 @@ with col_left:
     """)
     
     st.markdown("""
-    - 🔮 **Prophet ML** → Next month demand per grocery  
-    - 📊 **Live Dashboards** → Sales trends + stock alerts
-    - 🗣️ **Voice Control** → Speech-to-text product search
-    - 🧪 **Simulations** → Customer cart + seller reorders
-    - 📈 **Export Ready** → Charts for presentations
+    🔮 **Prophet ML** → Next-month grocery demand  
+    📊 **Live Dashboards** → Trends + stock levels
+    🗣️ **Voice Search** → Speech-to-text products
+    🧪 **Simulations** → Customer + seller demo
+    📈 **Export Charts** → Viva-ready reports
     """)
     
-    st.caption("Kothri Kalan, Kanpur • [GitHub Repo](https://github.com/kkarrann07/Hyperlocal-Demand-Forecasting)")
+    st.caption("Kothri Kalan, Kanpur • [GitHub](https://github.com/kkarrann07/Hyperlocal-Demand-Forecasting)")
 
 with col_right:
+    # Kirana photo (top)
     st.image("https://pplx-res.cloudinary.com/image/upload/pplx_search_images/e4aea43c9b8641be94ad8a98db03012aacb6ba3f.jpg", 
-             caption="🛍️ Kanpur kirana store", width=400)
+             caption="🛍️ Kanpur kirana", width=380)
     
-    st.markdown("### 📈 Prophet Forecast")
+    # ANIMATED Prophet chart (middle - fills space)
+    st.markdown("### <span class='glow'>📈 Prophet Forecast</span>", unsafe_allow_html=True)
     
     past_x = df['Month'].dt.strftime('%b-%Y').tail(10).tolist()
     past_y = df['Monthly_Sales'].tail(10).tolist()
@@ -67,39 +72,49 @@ with col_right:
     
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=past_x, y=past_y, mode='lines+markers', 
-                            name='Past Sales', line=dict(color='#10B981', width=4)))
+                            line=dict(color='#10B981', width=4), marker_size=10))
     fig.add_trace(go.Scatter(x=future_x, y=future_y, mode='lines+markers', 
-                            name='Forecast', line=dict(color='#3B82F6', dash='dash', width=4)))
-    fig.update_layout(height=260, showlegend=True, margin=dict(t=20, l=40))
+                            line=dict(color='#3B82F6', dash='dash', width=4)))
+    fig.update_layout(height=280, showlegend=False, margin=dict(t=30))
     st.plotly_chart(fig, use_container_width=False, width="100%")
+    
+    # ANIMATED Live Stats (bottom - fills remaining space)
+    st.markdown("### <span class='metric-glow'>⚡ Live Stats</span>", unsafe_allow_html=True)
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Data Points", f"{len(df):,}", delta="↑24%")
+    m2.metric("Avg Sales", f"₹{df['Monthly_Sales'].mean():.0f}", delta="Jul Peak")
+    m3.metric("Forecast", "6 Months", delta="Ready")
 
 st.markdown("---")
 
-# === NAV CARDS ===
+# === FEATURE CARDS ===
 st.markdown("## 🚀 Features")
 cards = st.columns(5)
-with cards[0]: st.markdown("### 🔮 **Forecast**"); st.success("Prophet ML")
-with cards[1]: st.markdown("### 📊 **Data**"); st.success("Raw tables")
-with cards[2]: st.markdown("### 📈 **Trends**"); st.success("Interactive")
-with cards[3]: st.markdown("### 🧪 **Simulate**"); st.success("Live demo")
+with cards[0]: st.markdown("### 🔮 **ML Forecast**"); st.success("Prophet")
+with cards[1]: st.markdown("### 📊 **Raw Data**"); st.success("Tables")
+with cards[2]: st.markdown("### 📈 **Visuals**"); st.success("Plots")
+with cards[3]: st.markdown("### 🧪 **Simulate**"); st.success("Live")
 with cards[4]: st.markdown("### 📉 **Export**"); st.success("Reports")
 
 st.markdown("---")
 
-# === DEMO ===
-st.markdown("## 🎯 Flows")
+# === DEMO FLOWS ===
+st.markdown("## 🎯 How It Works")
 c1, c2 = st.columns(2)
-with c1: 
+with c1:
     st.markdown("### 👤 **Customer**")
-    st.markdown("1. Voice search → Forecast<br>2. Add cart → Order")
+    st.markdown("1. Voice → 'Bread'<br>2. See forecast<br>3. Add cart → Buy")
 with c2:
     st.markdown("### 🏪 **Seller**")
-    st.markdown("1. Live stock view<br>2. Auto reorders<br>3. ML reports")
+    st.markdown("1. Live stock<br>2. ML alerts<br>3. Export report")
 
-# === STATS ===
-st.markdown("### 📊 Stats")
-m1,m2,m3,m4 = st.columns(4)
-m1.metric("Data", f"{len(df):,}", "↑24%")
-m2.metric("Avg", f"₹{df['Monthly_Sales'].mean():.0f}")
-m3.metric("Peak", "Jul")
-m4.metric("Forecast", "6 mo.")
+st.markdown("---")
+
+# === FOOTER ===
+col1, col2 = st.columns([3,1])
+with col1:
+    st.markdown("*Karan K • **2nd Year B.Tech CSE** • Kanpur, UP 🇮🇳*")
+    st.caption("Streamlit | Prophet ML | Plotly | Speech-to-Text")
+with col2:
+    st.markdown("**v3.2**")
+    st.caption("Mar 2026")
