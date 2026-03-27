@@ -8,4 +8,4 @@ prophet
 cmdstanpy
 statsmodels
 streamlit-mic-recorder
-pmdarima==2.0.4
+
