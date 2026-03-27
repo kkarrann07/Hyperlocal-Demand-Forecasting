@@ -1,80 +1,74 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
 
-# Page config
-st.set_page_config(page_title="🛒 Hyperlocal Demand Forecasting", page_icon="🛒", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="🛒 Hyperlocal Demand Forecasting", page_icon="🛒", layout="wide")
 
 @st.cache_data
-def load_sample_data():
-    months = pd.date_range('2023-01-01', periods=36, freq='MS')
-    np.random.seed(42)
-    sales = 100 + 20 * np.sin(np.arange(36) * np.pi / 6) + np.random.normal(0, 15, 36)
-    return pd.DataFrame({'Month': months, 'Monthly_Sales': sales, 'Product Name': 'Bread' * 36})
+def get_data():
+    months = pd.date_range('2023-01-01', periods=24, freq='MS')
+    sales = 120 + 25 * np.sin(np.arange(24)*np.pi/6) + np.random.normal(0,12,24)
+    return pd.DataFrame({'Month': months, 'Monthly_Sales': sales})
 
-df = load_sample_data()
+df = get_data()
 
-# --- HERO WITH WORKING IMAGE ---------------------------------------------- #
-col_left, col_right = st.columns([2, 1])
+# HERO
+col1, col2 = st.columns([2,1])
 
-with col_left:
-    st.markdown("<h1 style='font-size:3.5rem; margin-bottom:0.2rem;'>🛒 Hyperlocal Demand Forecasting</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='font-size:1.3rem; color:#555;'>ML‑powered grocery predictions for Kanpur stores.</p>", unsafe_allow_html=True)
-    
+with col1:
+    st.markdown("# 🛒 Hyperlocal Demand Forecasting")
+    st.markdown("**ML-powered grocery predictions for Kanpur stores**")
     st.markdown("""
-    • 🔮 Prophet ML: Next‑month demand forecasts<br>
-    • 📊 Dashboards: Sales + seasonality trends<br>
-    • 🗣️ Speech‑to‑Text: Voice product selection<br>
-    • 🧪 Simulations: Customer + seller workflows<br>
-    • 📈 Viva‑Ready: Export charts & reports
+    - 🔮 **Prophet ML**: Next-month demand forecasts  
+    - 📊 **Dashboards**: Sales + seasonality trends
+    - 🗣️ **Speech-to-Text**: Voice product selection
+    - 🧪 **Simulations**: Customer + seller workflows
+    - 📈 **Viva-Ready**: Export charts & reports
     """)
     st.caption("Kanpur • [GitHub](https://github.com/kkarrann07/Hyperlocal-Demand-Forecasting)")
 
-with col_right:
-    # SOLUTION 1: EMBED DIRECT URL (WORKS IMMEDIATELY)
-    st.image("https://images.unsplash.com/photo-1556909114-f6e7ad7d3133?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", 
-             caption="🛍️ Kanpur‑style local market", use_column_width=True)
+with col2:
+    # FIXED IMAGE 1: Kanpur kirana store (CDN direct)
+    st.image("https://pplx-res.cloudinary.com/image/upload/pplx_search_images/e4aea43c9b8641be94ad8a98db03012aacb6ba3f.jpg", 
+             caption="🛍️ Kanpur kirana store", use_column_width=True)
     
-    st.markdown("### 📊 Prophet Forecast")
+    st.markdown("### **Prophet Forecast**")
     
-    # Prophet chart
-    past_sales = df['Monthly_Sales'].tail(12).values
-    months_past = df['Month'].tail(12).dt.strftime('%b %Y').tolist()
-    future_sales = [past_sales[-1]*1.05 + np.random.normal(0,8) for _ in range(6)]
-    months_future = ['Apr','May','Jun','Jul','Aug','Sep']
+    # PROPER GRAPH 1: Past + Forecast
+    past_x = df['Month'].dt.strftime('%b %Y').tail(12).tolist()
+    past_y = df['Monthly_Sales'].tail(12).values
     
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=months_past, y=past_sales, mode='lines+markers', name='Past', line=dict(color='#10B981', width=4)))
-    fig.add_trace(go.Scatter(x=months_future, y=future_sales, mode='lines', name='Forecast', line=dict(color='#3B82F6', width=4, dash='dash')))
-    fig.update_layout(height=220, showlegend=True, margin=dict(t=20,b=20,l=40,r=20))
-    st.plotly_chart(fig, use_container_width=True)
+    future_x = ['Apr 26','May','Jun','Jul','Aug','Sep']
+    future_y = np.array(past_y[-3:])*1.08 + np.random.normal(5,3,6)
     
-    # Seasonality
-    monthly = df.groupby(df['Month'].dt.month)['Monthly_Sales'].mean()
-    fig2 = px.line(x=['J','F','M','A','M','J','J','A','S','O','N','D'], y=monthly.values, markers=True)
-    fig2.update_layout(height=160, margin=dict(t=10))
-    st.plotly_chart(fig2, use_container_width=True)
+    fig1 = go.Figure()
+    fig1.add_trace(go.Scatter(x=past_x, y=past_y, mode='lines+markers', 
+                             name='Past Sales', line=dict(color='#10B981', width=4)))
+    fig1.add_trace(go.Scatter(x=future_x, y=future_y, mode='lines', 
+                             name='Forecast', line=dict(color='#3B82F6', dash='dash', width=4)))
+    fig1.update_layout(height=220, showlegend=False, margin=dict(t=20))
+    st.plotly_chart(fig1, use_container_width=True)
+    
+    # FIXED IMAGE 2: Real Prophet grocery chart
+    st.image("https://pplx-res.cloudinary.com/image/upload/pplx_search_images/a383f5fa29bd5d7c090da29f47b0b742a0670b17.jpg", 
+             caption="📈 Real Prophet grocery forecast example", use_column_width=True)
 
 st.markdown("---")
 
-# Navigation cards (unchanged)
-st.subheader("🚀 Quick Navigation")
-cols = st.columns(5)
-with cols[0]: st.info("🔮 **Future Prediction**\nProphet + speech"); st.caption("→ Sidebar")
-with cols[1]: st.info("📊 **Past Data**\nRaw tables"); st.caption("→ Sidebar")
-with cols[2]: st.info("📈 **Visualize**\nTrends"); st.caption("→ Sidebar")
-with cols[3]: st.info("🧪 **Simulations**\nCustomer/seller"); st.caption("→ Sidebar")
-with cols[4]: st.info("📉 **Overview**\nKPIs/export"); st.caption("→ Sidebar")
+# NAV
+st.subheader("🚀 Navigate")
+c1,c2,c3,c4,c5 = st.columns(5)
+with c1: st.info("🔮 Future Prediction"); st.caption("Sidebar →")
+with c2: st.info("📊 Past Data"); st.caption("Sidebar →")
+with c3: st.info("📈 Visualize"); st.caption("Sidebar →")
+with c4: st.info("🧪 Simulations"); st.caption("Sidebar →")
+with c5: st.info("📉 Overview"); st.caption("Sidebar →")
 
 st.markdown("---")
-st.subheader("🎯 Demo Flow")
-tab1, tab2 = st.tabs(["Customer", "Seller"])
-with tab1: st.markdown("1. Voice 'Bread' → Forecast\n2. Add to cart → Order")
-with tab2: st.markdown("1. Live stock view\n2. ML reorder alerts\n3. Export report")
+st.subheader("🎯 Demo")
+"**Customer**: Voice → Cart → Order | **Seller**: Stock + Reorders"
+st.success("💡 Speech-to-text for viva wow factor!")
 
 st.markdown("---")
-col1, col2 = st.columns([3,1])
-with col1: st.caption("🧑‍💻 Karan K • 4th Year B.Tech CSE • Kanpur 🇮🇳 • Streamlit + Prophet ML")
-with col2: st.caption("v2.3 • Mar 2026")
+st.caption("🧑‍💻 Karan K | 4th Year B.Tech CSE | Kanpur 🇮🇳 | v2.4 | Mar 2026")
