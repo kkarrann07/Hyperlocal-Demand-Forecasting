@@ -1,296 +1,113 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
+from pathlib import Path
 
-# ---------- PAGE CONFIG ---------- #
 st.set_page_config(
     page_title="🛒 Hyperlocal Demand Forecasting",
     page_icon="🛒",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="collapsed"
 )
 
-# ---------- GLOBAL STYLES (FONTS + LAYOUT + GLASS) ---------- #
-st.markdown(
-    """
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+# Custom CSS for premium SaaS look
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;700&display=swap');
+h1 { font-family: 'Poppins', sans-serif; color: #1e293b; }
+.metric-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 1rem; }
+</style>
+""", unsafe_allow_html=True)
 
-    html, body, [class*="css"]  {
-        font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        background: radial-gradient(circle at top left, #f6f7ff 0, #ffffff 40%, #f3f4ff 100%);
-    }
-
-    .block-container {
-        padding-top: 1.5rem;
-        padding-bottom: 1.5rem;
-        max-width: 1100px;
-        margin: 0 auto;
-    }
-
-    h1, h2, h3 {
-        font-family: 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-        letter-spacing: -0.03em;
-    }
-
-    .hero-card {
-        background: rgba(255, 255, 255, 0.8);
-        border-radius: 20px;
-        padding: 1.5rem 2rem;
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.10);
-        backdrop-filter: blur(10px);
-    }
-
-    .tag-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.25rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(15, 23, 42, 0.04);
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-
-    .metric-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.12em;
-        color: #64748b;
-        margin-bottom: 0.15rem;
-    }
-
-    .metric-value {
-        font-size: 1.3rem;
-        font-weight: 600;
-        color: #0f172a;
-    }
-
-    .section-title {
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-    }
-
-    ul.hero-list {
-        margin-top: 0.6rem;
-        margin-bottom: 0.6rem;
-        padding-left: 1.1rem;
-        color: #1f2933;
-        font-size: 0.94rem;
-    }
-
-    ul.hero-list li + li {
-        margin-top: 0.15rem;
-    }
-
-    .feature-card {
-        background: white;
-        border-radius: 14px;
-        padding: 0.75rem 1rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        font-size: 0.88rem;
-    }
-
-    .how-steps {
-        font-size: 0.9rem;
-        color: #111827;
-    }
-
-    .footer-text {
-        font-size: 0.8rem;
-        color: #6b7280;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-# ---------- DATA (SIMPLE DEMO SERIES) ---------- #
 @st.cache_data
-def get_data():
-    months = pd.date_range("2023-01-01", periods=24, freq="MS")
-    sales = 120 + 25 * np.sin(np.arange(24) * np.pi / 6) + np.random.normal(0, 10, 24)
-    return pd.DataFrame({"Month": months, "Monthly_Sales": sales})
+def load_sample_data():
+    """Load Excel or generate realistic demo"""
+    try:
+        data_path = "hyperlocal_demand_forecasting_with_grocery_items-2.xlsx"
+        df = pd.read_excel(data_path)
+        df['Month'] = pd.to_datetime(df['Month'])
+        return df
+    except:
+        # Fallback demo mimicking your grocery data
+        months = pd.date_range('2023-01-01', periods=24, freq='MS')
+        sales = 120 + 25 * np.sin(np.arange(24)*np.pi/6) + np.random.normal(0, 10, 24)
+        return pd.DataFrame({'Month': months, 'Monthly_Sales': sales, 'Product Name': 'Bread'})
 
+df = load_sample_data()
 
-df = get_data()
+# Hero Section
+col1, col2 = st.columns([2, 1])
+with col1:
+    st.title("🛒 Hyperlocal Demand Forecasting")
+    st.markdown("""
+    **Predict grocery demand at neighborhood level** with Prophet-powered forecasts.
+    - Real-time sales trends & seasonality
+    - Next-month predictions & reorder alerts
+    - Voice-activated product selection
+    """)
+with col2:
+    # Sample Prophet chart
+    fig = go.Figure()
+    future_dates = pd.date_range(df['Month'].max() + pd.DateOffset(months=6), periods=6, freq='MS')
+    past_sales = df['Monthly_Sales'].tail(12).values
+    future_sales = np.mean(past_sales) + np.random.normal(0, 5, 6)
+    all_dates = list(df['Month'].tail(12)) + list(future_dates)
+    all_sales = np.concatenate([past_sales, future_sales])
+    fig.add_trace(go.Scatter(x=all_dates, y=all_sales, mode='lines', name='Forecast'))
+    fig.update_layout(height=300, showlegend=False)
+    st.plotly_chart(fig, use_container_width=True)
+    st.image("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=400", use_column_width=True)
 
-# ---------- HERO SECTION (COMPACT, NO BIG EMPTY AREAS) ---------- #
-with st.container():
-    st.markdown(
-        "<div class='tag-pill'>🧠 ML Project • Hyperlocal Grocery</div>",
-        unsafe_allow_html=True,
-    )
-
-    col_left, col_right = st.columns([1.25, 1])
-
-    with col_left:
-        st.markdown(
-            """
-            <h1 style="margin-top:0.4rem; margin-bottom:0.4rem;">
-                Hyperlocal Demand Forecasting
-            </h1>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        st.markdown(
-            "ML‑powered forecasts for neighbourhood kirana stores in Kanpur — built as an academic prototype.",
-        )
-
-        st.markdown(
-            """
-            <ul class="hero-list">
-              <li>🔮 <b>Prophet‑style forecasts</b> for each grocery item</li>
-              <li>📊 <b>Past vs. future</b> sales trends and seasonality</li>
-              <li>🧪 <b>Customer & seller flows</b> with live inventory updates</li>
-              <li>📈 <b>Viva‑ready visuals</b> for quick explanation in 2 minutes</li>
-            </ul>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        m1, m2, m3 = st.columns(3)
-        with m1:
-            st.markdown("<div class='metric-label'>Data Points</div>", unsafe_allow_html=True)
-            st.markdown(
-                f"<div class='metric-value'>{len(df):,}</div>", unsafe_allow_html=True
-            )
-        with m2:
-            st.markdown("<div class='metric-label'>Avg Monthly Sales</div>", unsafe_allow_html=True)
-            st.markdown(
-                f"<div class='metric-value'>₹{df['Monthly_Sales'].mean():.0f}</div>",
-                unsafe_allow_html=True,
-            )
-        with m3:
-            st.markdown("<div class='metric-label'>Forecast Horizon</div>", unsafe_allow_html=True)
-            st.markdown("<div class='metric-value'>6 months</div>", unsafe_allow_html=True)
-
-        st.caption("Karan K • 2nd Year B.Tech CSE • Kanpur, UP 🇮🇳")
-
-    with col_right:
-        with st.container():
-            st.markdown('<div class="hero-card">', unsafe_allow_html=True)
-
-            st.image(
-                "https://pplx-res.cloudinary.com/image/upload/pplx_search_images/e4aea43c9b8641be94ad8a98db03012aacb6ba3f.jpg",
-                caption="Kanpur kirana storefront",
-                width=330,
-            )
-
-            # Simple past + demo future line (small, no extra height)
-            past_x = df["Month"].dt.strftime("%b %y").tail(9).tolist()
-            past_y = df["Monthly_Sales"].tail(9).tolist()
-            future_x = ["Apr 26", "May", "Jun", "Jul", "Aug", "Sep"]
-            base = past_y[-1]
-            future_y = [base * (1.02 + i * 0.02) for i in range(len(future_x))]
-
-            fig = go.Figure()
-            fig.add_trace(
-                go.Scatter(
-                    x=past_x,
-                    y=past_y,
-                    mode="lines+markers",
-                    name="Past",
-                    line=dict(color="#10B981", width=3),
-                    marker=dict(size=7),
-                )
-            )
-            fig.add_trace(
-                go.Scatter(
-                    x=future_x,
-                    y=future_y,
-                    mode="lines+markers",
-                    name="Forecast",
-                    line=dict(color="#3B82F6", width=3, dash="dash"),
-                    marker=dict(size=7),
-                )
-            )
-            fig.update_layout(
-                margin=dict(l=20, r=10, t=10, b=10),
-                height=210,
-                showlegend=False,
-                xaxis_title=None,
-                yaxis_title="Units",
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-            st.markdown("</div>", unsafe_allow_html=True)
-
-st.markdown("")
-
-# ---------- FEATURE CARDS (ONE ROW, COMPACT) ---------- #
-st.markdown("### Features inside the app")
-
-f1, f2, f3, f4 = st.columns(4)
-
-with f1:
-    st.markdown("#### 🔮 Future Prediction")
-    st.markdown(
-        "<div class='feature-card'>Item‑wise demand prediction using time‑series models.</div>",
-        unsafe_allow_html=True,
-    )
-with f2:
-    st.markdown("#### 📊 Past Data")
-    st.markdown(
-        "<div class='feature-card'>Clean tables of historical sales and stock.</div>",
-        unsafe_allow_html=True,
-    )
-with f3:
-    st.markdown("#### 📈 Visualization")
-    st.markdown(
-        "<div class='feature-card'>Monthly trends and product comparisons.</div>",
-        unsafe_allow_html=True,
-    )
-with f4:
-    st.markdown("#### 🧪 Simulation")
-    st.markdown(
-        "<div class='feature-card'>Customer cart + seller dashboard with smart reorders.</div>",
-        unsafe_allow_html=True,
-    )
-
+# Features Grid
 st.markdown("---")
+cols = st.columns(4)
+with cols[0]:
+    st.markdown("""
+    <div class="metric-card">
+    <h3>🔮 ML Forecasts</h3>
+    <p>Prophet models for 12-month demand</p>
+    </div>
+    """, unsafe_allow_html=True)
+with cols[1]:
+    st.markdown("""
+    <div class="metric-card">
+    <h3>📊 Live KPIs</h3>
+    <p>Peak months, days of cover, total demand</p>
+    </div>
+    """, unsafe_allow_html=True)
+with cols[2]:
+    st.markdown("""
+    <div class="metric-card">
+    <h3>🎤 Voice Input</h3>
+    <p>Hands-free product selection</p>
+    </div>
+    """, unsafe_allow_html=True)
+with cols[3]:
+    st.markdown("""
+    <div class="metric-card">
+    <h3>📈 Interactive Charts</h3>
+    <p>Plotly visuals + CSV exports</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-# ---------- HOW IT WORKS (CUSTOMER / SELLER) ---------- #
-st.markdown("### 🎯 How it works")
+# Quick Actions (links to pages/)
+st.markdown("### 🚀 Quick Access")
+action1, action2, action3, action4 = st.columns(4)
+if action1.button("🔮 Future Prediction", type="primary"):
+    st.switch_page("pages/Future_Prediction.py")
+if action2.button("📊 Past Data"):
+    st.switch_page("pages/Past_Data.py")
+if action3.button("📉 Visualizations"):
+    st.switch_page("pages/Past_Data_Visualization.py")
+if action4.button("📊 Forecasting"):
+    st.switch_page("pages/Forecasting.py")
 
-c1, c2 = st.columns(2)
-
-with c1:
-    st.markdown("#### 👤 Customer")
-    st.markdown(
-        """
-        <div class='how-steps'>
-        1. Choose a product in <b>Future Prediction</b> (or use voice).  
-        2. See past vs. forecasted sales on the chart.  
-        3. Add items in <b>Customer Simulation</b> to place an order.  
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-with c2:
-    st.markdown("#### 🏪 Seller")
-    st.markdown(
-        """
-        <div class='how-steps'>
-        1. Open <b>Seller Dashboard</b> to see live stock.  
-        2. Review ML‑based next‑month demand and days of cover.  
-        3. Use <b>Forecasting</b> page for KPIs when explaining in viva.  
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
+# Footer
 st.markdown("---")
-
-# ---------- FOOTER ---------- #
-fc1, fc2 = st.columns([3, 1])
-with fc1:
-    st.markdown(
-        "<div class='footer-text'>Built with Streamlit, Prophet‑style time‑series models, and Plotly charts.</div>",
-        unsafe_allow_html=True,
-    )
-with fc2:
-    st.markdown("<div class='footer-text' style='text-align:right;'>v3.3 • March 2026</div>", unsafe_allow_html=True)
+col_left, col_right = st.columns([3,1])
+with col_left:
+    st.markdown("*Powered by Python, Streamlit & Prophet | Deployed on Streamlit Cloud*")
+with col_right:
+    st.caption("v2.0")
