@@ -101,7 +101,7 @@ with tab2:
     3. **Forecasting** → Export full report with all predictions
     """)
 
-st.success("💡 **Pro Tip:** Use speech‑to‑text during viva for wow factor!")
+st.success("💡")
 
 # --- FOOTER ---------------------------------------------------------------- #
 st.markdown("---")
