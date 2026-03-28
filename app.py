@@ -79,9 +79,10 @@ h1, h2, h3, h4 {
 }
 
 /* Sidebar Orange */
-.sidebar .metric { 
+section[data-testid="stSidebar"] .stMetric {
     background: linear-gradient(135deg, #FF9500, #FF7043) !important;
     border-radius: 12px !important;
+    padding: 1rem !important;
 }
 
 /* YOUR Orange Popper.js (Special Request) */
@@ -168,20 +169,20 @@ def load_data():
 
 df = load_data()
 
-# Sidebar: Live Metrics (unchanged)
+# Sidebar: Live Metrics (FIXED empty boxes)
 with st.sidebar:
     st.header("📊 Live Metrics")
     col1, col2 = st.columns(2)
     with col1:
         avg_sales = df['Monthly_Sales'].mean()
-        st.metric("Avg Sales", f"₹{avg_sales:.0f}", delta="+12%")
+        st.metric("Avg Sales", f"₹{avg_sales:,.0f}", delta="+12%")
         peak_row = df.loc[df['Monthly_Sales'].idxmax()]
-        st.metric("Peak Month", peak_row['Month'].strftime('%b %Y'))
+        st.metric("Peak Month", peak_row['Month'].strftime('%b %Y'), delta=None)
     with col2:
         total = df['Monthly_Sales'].sum()
         st.metric("Total Demand", f"₹{total:,.0f}")
         top_prod = df.groupby('Product Name')['Monthly_Sales'].sum().idxmax()
-        st.metric("Top Product", top_prod)
+        st.metric("Top Product", top_prod[:20]+"..." if len(top_prod)>20 else top_prod)
     st.markdown("---")
     if st.button("🔄 Refresh Data", type="secondary"):
         st.cache_data.clear()
@@ -260,7 +261,7 @@ with col1:
     with col_a:
         next_month = avg_monthly * 1.12
         st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-        st.metric("Next Month Forecast", f"₹{next_month:.0f}", "↑12%")
+        st.metric("Next Month Forecast", f"₹{next_month:,.0f}", "↑12%")
         st.markdown('</div>', unsafe_allow_html=True)
     with col_b:
         daily_avg = avg_monthly / 30
@@ -285,8 +286,9 @@ with col2:
     fig.update_layout(height=380, showlegend=False, title=f"{product} Demand Trend")
     st.plotly_chart(fig, use_container_width=True)
     
-    st.image("https://images.unsplash.com/photo-1581235720704-06d4203b62b5?width=380&height=280&fit=crop", 
-             caption="Kanpur Kirana Store", use_container_width=True)
+    # ✅ FIXED: Reliable Kanpur kirana image (smaller, reliable CDN)
+    st.image("https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&h=300&fit=crop", 
+             caption="🛒 Kanpur Kirana Store", use_column_width=True)
 
 # Features Grid (Enhanced with cards)
 st.markdown("---")
@@ -306,4 +308,4 @@ if btn_cols[2].button("📉 Visualizations", use_container_width=True): st.switc
 if btn_cols[3].button("📊 Forecasting", use_container_width=True): st.switch_page("pages/Forecasting.py")
 
 st.markdown("---")
-st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.6*")  # Updated version
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.7*")
