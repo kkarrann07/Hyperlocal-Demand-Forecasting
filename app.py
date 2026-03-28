@@ -12,79 +12,79 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🌈 ENHANCED CSS: Light Purple Theme + Glassmorphism Everywhere
+# 🌈 YOUR ORANGE Palette + Glassmorphism (ALL features preserved)
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
 
-/* Global Purple Gradient Background */
+/* Global Warm Orange Gradient Background */
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
+    background: linear-gradient(135deg, #FAF9F6 0%, #FFE5CC 50%, #FFF2E5 100%) !important;
 }
 
-/* Purple Text Gradients */
+/* Warm Orange Text Gradients */
 h1, h2, h3, h4 { 
     font-family: 'Poppins', sans-serif !important;
-    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    background: linear-gradient(135deg, #FF9500 0%, #1A1A2E 70%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
-/* Enhanced Glassmorphism Cards */
+/* Enhanced Glassmorphism Cards (Orange accents) */
 .metric-card { 
-    background: rgba(255,255,255,0.15) !important; 
+    background: rgba(255,255,255,0.85) !important; 
     backdrop-filter: blur(25px) !important; 
-    border: 1px solid rgba(255,255,255,0.35) !important; 
+    border: 1px solid rgba(255,149,0,0.3) !important; 
     border-radius: 20px !important; 
     padding: 1.5rem !important; 
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 12px 40px rgba(255,149,0,0.15) !important;
 }
 .metric-card:hover { 
     transform: translateY(-10px) scale(1.02) !important; 
-    box-shadow: 0 25px 50px rgba(192,132,252,0.3) !important; 
-    border-color: #C084FC !important;
+    box-shadow: 0 25px 50px rgba(255,149,0,0.3) !important; 
+    border-color: #FF9500 !important;
 }
 
-/* Light Purple Buttons */
+/* Warm Orange Buttons */
 .stButton > button {
-    background: linear-gradient(135deg, #C084FC, #A78BFA) !important;
+    background: linear-gradient(135deg, #FF9500, #FF7043) !important;
     color: white !important;
     border: none !important;
     border-radius: 16px !important;
     padding: 0.8rem 1.8rem !important;
     font-weight: 600 !important;
     font-family: 'Inter', sans-serif !important;
-    box-shadow: 0 6px 20px rgba(192,132,252,0.4) !important;
+    box-shadow: 0 6px 20px rgba(255,149,0,0.4) !important;
     transition: all 0.3s ease !important;
 }
 .stButton > button:hover {
     transform: translateY(-3px) !important;
-    box-shadow: 0 12px 30px rgba(192,132,252,0.6) !important;
+    box-shadow: 0 12px 30px rgba(255,149,0,0.6) !important;
 }
 
-/* Selectbox & Inputs */
+/* Selectbox & Inputs (Orange glow) */
 .stSelectbox > div > div > div, .stTextInput > div > div > input {
-    background: rgba(255,255,255,0.2) !important;
-    border: 1px solid rgba(255,255,255,0.4) !important;
+    background: rgba(255,255,255,0.9) !important;
+    border: 1px solid rgba(255,149,0,0.4) !important;
     border-radius: 16px !important;
     backdrop-filter: blur(15px) !important;
-    color: white !important;
+    color: #1A1A2E !important;
 }
 .stSelectbox > div > div > div:hover {
-    border-color: #C084FC !important;
-    box-shadow: 0 0 20px rgba(192,132,252,0.3) !important;
+    border-color: #FF9500 !important;
+    box-shadow: 0 0 20px rgba(255,149,0,0.3) !important;
 }
 
-/* Sidebar Purple */
+/* Sidebar Orange */
 .sidebar .metric { 
-    background: linear-gradient(135deg, #C084FC, #A78BFA) !important;
+    background: linear-gradient(135deg, #FF9500, #FF7043) !important;
     border-radius: 12px !important;
 }
 
-/* Light Purple Popper.js (Special Request) */
+/* YOUR Orange Popper.js (Special Request) */
 .popper-trigger {
     display: inline-flex !important;
     align-items: center !important;
@@ -93,40 +93,40 @@ h1, h2, h3, h4 {
     margin-left: 12px !important;
     font-size: 13px !important;
     border-radius: 25px !important;
-    border: 2px solid #C084FC !important;
-    background: linear-gradient(135deg, rgba(192,132,252,0.2), rgba(167,139,250,0.2)) !important;
-    color: #C084FC !important;
+    border: 2px solid #FF9500 !important;
+    background: linear-gradient(135deg, rgba(255,149,0,0.2), rgba(255,112,67,0.2)) !important;
+    color: #FF9500 !important;
     cursor: pointer !important;
     font-weight: 600 !important;
     backdrop-filter: blur(15px) !important;
-    box-shadow: 0 4px 20px rgba(192,132,252,0.3) !important;
+    box-shadow: 0 4px 20px rgba(255,149,0,0.3) !important;
     transition: all 0.3s ease !important;
 }
 .popper-trigger:hover {
-    background: linear-gradient(135deg, #C084FC, #A78BFA) !important;
+    background: linear-gradient(135deg, #FF9500, #FF7043) !important;
     color: white !important;
     transform: scale(1.05) !important;
-    box-shadow: 0 8px 25px rgba(192,132,252,0.5) !important;
+    box-shadow: 0 8px 25px rgba(255,149,0,0.5) !important;
 }
 .popper-tooltip {
-    background: linear-gradient(135deg, rgba(192,132,252,0.95), rgba(167,139,250,0.95)) !important;
+    background: linear-gradient(135deg, rgba(255,149,0,0.95), rgba(255,112,67,0.95)) !important;
     color: white !important;
     padding: 14px 18px !important;
     border-radius: 16px !important;
     border: 1px solid rgba(255,255,255,0.3) !important;
     font-size: 13px !important;
     font-weight: 500 !important;
-    box-shadow: 0 15px 40px rgba(192,132,252,0.4) !important;
+    box-shadow: 0 15px 40px rgba(255,149,0,0.4) !important;
     backdrop-filter: blur(20px) !important;
     z-index: 9999 !important;
 }
 
-/* Error Box */
+/* Error Box (Orange warning style) */
 .error-box { 
-    background: rgba(254,226,226,0.9) !important; 
+    background: rgba(255,245,230,0.95) !important; 
     padding: 1.75rem !important; 
     border-radius: 20px !important; 
-    border-left: 6px solid #ef4444 !important;
+    border-left: 6px solid #FF9500 !important;
     backdrop-filter: blur(15px) !important;
 }
 </style>
@@ -200,7 +200,7 @@ with col1:
     
     product = st.selectbox("🎯 Select Product", sorted(df['Product Name'].unique()))
 
-    # ✅ ENHANCED Light Purple Popper.js (Your Special Request)
+    # ✅ ENHANCED Orange Popper.js (Your Special Request)
     components.html("""
     <div id="popper-root">
       <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
@@ -280,7 +280,7 @@ with col2:
     all_dates = list(recent['Month']) + list(future_dates)
     all_sales = list(recent['Monthly_Sales']) + list(future_sales)
     fig.add_trace(go.Scatter(x=all_dates, y=all_sales, mode='lines+markers', 
-                            line=dict(color='#10b981', width=3), 
+                            line=dict(color='#FF9500', width=3), 
                             name=f"{product} Forecast"))
     fig.update_layout(height=380, showlegend=False, title=f"{product} Demand Trend")
     st.plotly_chart(fig, use_container_width=True)
@@ -306,4 +306,4 @@ if btn_cols[2].button("📉 Visualizations", use_container_width=True): st.switc
 if btn_cols[3].button("📊 Forecasting", use_container_width=True): st.switch_page("pages/Forecasting.py")
 
 st.markdown("---")
-st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.5*")  # Updated version
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.6*")  # Updated version
