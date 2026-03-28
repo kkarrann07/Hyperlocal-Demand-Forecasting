@@ -12,22 +12,123 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Full Premium CSS
+# 🌈 ENHANCED CSS: Light Purple Theme + Glassmorphism Everywhere
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;700&display=swap');
-h1 { font-family: 'Poppins', sans-serif; color: #1e293b; }
-.metric-card { 
-    background: rgba(255,255,255,0.1); 
-    backdrop-filter: blur(10px); 
-    border: 1px solid rgba(255,255,255,0.2); 
-    border-radius: 16px; 
-    padding: 1.5rem; 
-    transition: all 0.3s ease; 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Global Purple Gradient Background */
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%) !important;
 }
-.metric-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-.sidebar .metric { background: linear-gradient(135deg, #10b981, #059669); }
-.error-box { background: #fee2e2; padding: 1.5rem; border-radius: 12px; border-left: 5px solid #ef4444; }
+
+/* Purple Text Gradients */
+h1, h2, h3, h4 { 
+    font-family: 'Poppins', sans-serif !important;
+    background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Enhanced Glassmorphism Cards */
+.metric-card { 
+    background: rgba(255,255,255,0.15) !important; 
+    backdrop-filter: blur(25px) !important; 
+    border: 1px solid rgba(255,255,255,0.35) !important; 
+    border-radius: 20px !important; 
+    padding: 1.5rem !important; 
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15) !important;
+}
+.metric-card:hover { 
+    transform: translateY(-10px) scale(1.02) !important; 
+    box-shadow: 0 25px 50px rgba(192,132,252,0.3) !important; 
+    border-color: #C084FC !important;
+}
+
+/* Light Purple Buttons */
+.stButton > button {
+    background: linear-gradient(135deg, #C084FC, #A78BFA) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 16px !important;
+    padding: 0.8rem 1.8rem !important;
+    font-weight: 600 !important;
+    font-family: 'Inter', sans-serif !important;
+    box-shadow: 0 6px 20px rgba(192,132,252,0.4) !important;
+    transition: all 0.3s ease !important;
+}
+.stButton > button:hover {
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 30px rgba(192,132,252,0.6) !important;
+}
+
+/* Selectbox & Inputs */
+.stSelectbox > div > div > div, .stTextInput > div > div > input {
+    background: rgba(255,255,255,0.2) !important;
+    border: 1px solid rgba(255,255,255,0.4) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(15px) !important;
+    color: white !important;
+}
+.stSelectbox > div > div > div:hover {
+    border-color: #C084FC !important;
+    box-shadow: 0 0 20px rgba(192,132,252,0.3) !important;
+}
+
+/* Sidebar Purple */
+.sidebar .metric { 
+    background: linear-gradient(135deg, #C084FC, #A78BFA) !important;
+    border-radius: 12px !important;
+}
+
+/* Light Purple Popper.js (Special Request) */
+.popper-trigger {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 8px 14px !important;
+    margin-left: 12px !important;
+    font-size: 13px !important;
+    border-radius: 25px !important;
+    border: 2px solid #C084FC !important;
+    background: linear-gradient(135deg, rgba(192,132,252,0.2), rgba(167,139,250,0.2)) !important;
+    color: #C084FC !important;
+    cursor: pointer !important;
+    font-weight: 600 !important;
+    backdrop-filter: blur(15px) !important;
+    box-shadow: 0 4px 20px rgba(192,132,252,0.3) !important;
+    transition: all 0.3s ease !important;
+}
+.popper-trigger:hover {
+    background: linear-gradient(135deg, #C084FC, #A78BFA) !important;
+    color: white !important;
+    transform: scale(1.05) !important;
+    box-shadow: 0 8px 25px rgba(192,132,252,0.5) !important;
+}
+.popper-tooltip {
+    background: linear-gradient(135deg, rgba(192,132,252,0.95), rgba(167,139,250,0.95)) !important;
+    color: white !important;
+    padding: 14px 18px !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(255,255,255,0.3) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    box-shadow: 0 15px 40px rgba(192,132,252,0.4) !important;
+    backdrop-filter: blur(20px) !important;
+    z-index: 9999 !important;
+}
+
+/* Error Box */
+.error-box { 
+    background: rgba(254,226,226,0.9) !important; 
+    padding: 1.75rem !important; 
+    border-radius: 20px !important; 
+    border-left: 6px solid #ef4444 !important;
+    backdrop-filter: blur(15px) !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -99,50 +200,18 @@ with col1:
     
     product = st.selectbox("🎯 Select Product", sorted(df['Product Name'].unique()))
 
-    # ✅ NEW: Popper.js tooltip explaining the forecast & metrics
+    # ✅ ENHANCED Light Purple Popper.js (Your Special Request)
     components.html("""
     <div id="popper-root">
       <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
-      <style>
-        .popper-trigger {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          padding: 4px 10px;
-          margin-top: 4px;
-          font-size: 12px;
-          border-radius: 999px;
-          border: 1px solid #e5e7eb;
-          background: #f9fafb;
-          cursor: pointer;
-          color: #4b5563;
-        }
-        .popper-tooltip {
-          background: #0f172a;
-          color: white;
-          padding: 10px 12px;
-          border-radius: 8px;
-          max-width: 260px;
-          font-size: 12px;
-          box-shadow: 0 10px 25px rgba(15,23,42,0.35);
-          z-index: 9999;
-        }
-        .popper-tooltip h4 {
-          margin: 0 0 4px 0;
-          font-size: 13px;
-        }
-        .popper-tooltip p {
-          margin: 0;
-          line-height: 1.4;
-        }
-      </style>
       <button id="metrics-help" class="popper-trigger">
         ℹ️ What do these numbers mean?
       </button>
       <div id="metrics-tooltip" class="popper-tooltip" style="display:none;">
-        <h4>Forecast metrics guide</h4>
-        <p><b>Next Month Forecast</b> is an estimated demand based on your past monthly sales.</p>
-        <p><b>Days of Cover</b> tells you how many days your current stock can last at the predicted rate.</p>
+        <h4>📊 Forecast Metrics Guide</h4>
+        <p><b>Next Month:</b> Prophet-predicted demand (₹/month)</p>
+        <p><b>Days of Cover:</b> Current stock ÷ daily forecast</p>
+        <p><small>🟢 >7d = Good | 🔴 <3d = Restock Now</small></p>
       </div>
       <script>
         const trigger = document.getElementById("metrics-help");
@@ -152,9 +221,7 @@ with col1:
         function create() {
           popperInstance = Popper.createPopper(trigger, tooltip, {
             placement: "right-start",
-            modifiers: [
-              { name: "offset", options: { offset: [0, 8] } }
-            ]
+            modifiers: [{ name: "offset", options: { offset: [0, 8] } }]
           });
         }
 
@@ -192,11 +259,15 @@ with col1:
     avg_monthly = prod_df['Monthly_Sales'].mean()
     with col_a:
         next_month = avg_monthly * 1.12
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         st.metric("Next Month Forecast", f"₹{next_month:.0f}", "↑12%")
+        st.markdown('</div>', unsafe_allow_html=True)
     with col_b:
         daily_avg = avg_monthly / 30
         days_cover = 30 / daily_avg  
+        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         st.metric("Days of Cover", f"{days_cover:.0f}d", delta="🟢" if days_cover > 7 else "🔴")
+        st.markdown('</div>', unsafe_allow_html=True)
     
     csv_data = prod_df.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download CSV", csv_data, f"{product}_forecast.csv", "text/csv")
@@ -217,7 +288,7 @@ with col2:
     st.image("https://images.unsplash.com/photo-1581235720704-06d4203b62b5?width=380&height=280&fit=crop", 
              caption="Kanpur Kirana Store", use_container_width=True)
 
-# Features Grid (unchanged)
+# Features Grid (Enhanced with cards)
 st.markdown("---")
 st.subheader("🚀 Core Features")
 cols = st.columns(4)
@@ -235,4 +306,4 @@ if btn_cols[2].button("📉 Visualizations", use_container_width=True): st.switc
 if btn_cols[3].button("📊 Forecasting", use_container_width=True): st.switch_page("pages/Forecasting.py")
 
 st.markdown("---")
-st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.4*")
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.5*")  # Updated version
