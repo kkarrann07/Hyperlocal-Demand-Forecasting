@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
 from pathlib import Path
+import streamlit.components.v1 as components  # ✅ NEW: for Popper.js block
 
 st.set_page_config(
     page_title="🛒 Hyperlocal Demand Forecasting",
@@ -46,13 +47,11 @@ def load_data():
             try:
                 df = pd.read_excel(data_path)
                 if 'Month' in df.columns and 'Monthly_Sales' in df.columns:
-                    # REMOVED: st.markdown success message
                     df['Month'] = pd.to_datetime(df['Month'])
                     return df
             except Exception:
                 continue
     
-    # Diagnostic error (unchanged)
     repo_files = [f.name for f in Path.cwd().iterdir() if f.is_file() and f.suffix.lower() in ['.xlsx', '.xls']]
     all_files = [f.name for f in Path.cwd().iterdir() if f.is_file()]
     st.markdown(f"""
@@ -87,7 +86,7 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-# Hero Section (ALL features unchanged)
+# Hero Section
 col1, col2 = st.columns([2.2, 1])
 with col1:
     st.title("🛒 Hyperlocal Demand Forecasting")
@@ -99,6 +98,94 @@ with col1:
     """)
     
     product = st.selectbox("🎯 Select Product", sorted(df['Product Name'].unique()))
+
+    # ✅ NEW: Popper.js tooltip explaining the forecast & metrics
+    components.html("""
+    <div id="popper-root">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
+      <style>
+        .popper-trigger {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          margin-top: 4px;
+          font-size: 12px;
+          border-radius: 999px;
+          border: 1px solid #e5e7eb;
+          background: #f9fafb;
+          cursor: pointer;
+          color: #4b5563;
+        }
+        .popper-tooltip {
+          background: #0f172a;
+          color: white;
+          padding: 10px 12px;
+          border-radius: 8px;
+          max-width: 260px;
+          font-size: 12px;
+          box-shadow: 0 10px 25px rgba(15,23,42,0.35);
+          z-index: 9999;
+        }
+        .popper-tooltip h4 {
+          margin: 0 0 4px 0;
+          font-size: 13px;
+        }
+        .popper-tooltip p {
+          margin: 0;
+          line-height: 1.4;
+        }
+      </style>
+      <button id="metrics-help" class="popper-trigger">
+        ℹ️ What do these numbers mean?
+      </button>
+      <div id="metrics-tooltip" class="popper-tooltip" style="display:none;">
+        <h4>Forecast metrics guide</h4>
+        <p><b>Next Month Forecast</b> is an estimated demand based on your past monthly sales.</p>
+        <p><b>Days of Cover</b> tells you how many days your current stock can last at the predicted rate.</p>
+      </div>
+      <script>
+        const trigger = document.getElementById("metrics-help");
+        const tooltip = document.getElementById("metrics-tooltip");
+        let popperInstance = null;
+
+        function create() {
+          popperInstance = Popper.createPopper(trigger, tooltip, {
+            placement: "right-start",
+            modifiers: [
+              { name: "offset", options: { offset: [0, 8] } }
+            ]
+          });
+        }
+
+        function destroy() {
+          if (popperInstance) {
+            popperInstance.destroy();
+            popperInstance = null;
+          }
+        }
+
+        trigger.addEventListener("click", () => {
+          const isHidden = tooltip.style.display === "none";
+          tooltip.style.display = isHidden ? "block" : "none";
+          if (isHidden) {
+            if (!popperInstance) create();
+            popperInstance.update();
+          } else {
+            destroy();
+          }
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!trigger.contains(event.target) && !tooltip.contains(event.target)) {
+            tooltip.style.display = "none";
+            destroy();
+          }
+        });
+      </script>
+    </div>
+    """, height=140)
+
     prod_df = df[df['Product Name'] == product].sort_values('Month')
     
     col_a, col_b = st.columns(2)
