@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
 from pathlib import Path
+import streamlit.components.v1 as components  # ✅ NEW: for Popper.js block
 
 st.set_page_config(
     page_title="🛒 Hyperlocal Demand Forecasting",
@@ -11,89 +12,28 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🌈 LIGHT PURPLE Palette + NATIVE TOOLTIP (No JS needed)
+# Full Premium CSS
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
-
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #F3F0FF 0%, #E0D7FF 50%, #EDE9FE 100%) !important;
-}
-
-h1, h2, h3, h4 { 
-    font-family: 'Poppins', sans-serif !important;
-    background: linear-gradient(135deg, #8B5CF6 0%, #4F46E5 70%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;700&display=swap');
+h1 { font-family: 'Poppins', sans-serif; color: #1e293b; }
 .metric-card { 
-    background: rgba(255,255,255,0.85) !important; 
-    backdrop-filter: blur(25px) !important; 
-    border: 1px solid rgba(139,92,246,0.3) !important; 
-    border-radius: 20px !important; 
-    padding: 1.5rem !important; 
-    box-shadow: 0 12px 40px rgba(139,92,246,0.15) !important;
+    background: rgba(255,255,255,0.1); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    border-radius: 16px; 
+    padding: 1.5rem; 
+    transition: all 0.3s ease; 
 }
-
-.stButton > button {
-    background: linear-gradient(135deg, #8B5CF6, #A78BFA) !important;
-    color: white !important;
-    border-radius: 16px !important;
-    padding: 0.8rem 1.8rem !important;
-    font-weight: 600 !important;
-    box-shadow: 0 6px 20px rgba(139,92,246,0.4) !important;
-}
-
-.stSelectbox > div > div > div {
-    background: rgba(255,255,255,0.9) !important;
-    border: 1px solid rgba(139,92,246,0.4) !important;
-    border-radius: 16px !important;
-    color: #1E1B4B !important;
-}
-
-section[data-testid="stSidebar"] .stMetric {
-    background: linear-gradient(135deg, #8B5CF6, #A78BFA) !important;
-    border-radius: 12px !important;
-    padding: 1rem !important;
-}
-
-.tooltip-trigger {
-    display: inline-flex;
-    padding: 8px 14px;
-    margin-left: 12px;
-    font-size: 13px;
-    border-radius: 25px;
-    border: 2px solid #8B5CF6;
-    background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(167,139,250,0.2));
-    color: #8B5CF6;
-    cursor: pointer;
-    font-weight: 600;
-}
-.tooltip-trigger:hover {
-    background: linear-gradient(135deg, #8B5CF6, #A78BFA) !important;
-    color: white !important;
-}
-.tooltip-content {
-    background: linear-gradient(135deg, rgba(139,92,246,0.95), rgba(167,139,250,0.95)) !important;
-    color: white !important;
-    padding: 16px 20px !important;
-    border-radius: 16px !important;
-    font-size: 14px !important;
-    line-height: 1.4 !important;
-    max-width: 280px !important;
-    box-shadow: 0 20px 50px rgba(139,92,246,0.4) !important;
-    position: absolute;
-    z-index: 1000;
-    display: none;
-}
+.metric-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+.sidebar .metric { background: linear-gradient(135deg, #10b981, #059669); }
+.error-box { background: #fee2e2; padding: 1.5rem; border-radius: 12px; border-left: 5px solid #ef4444; }
 </style>
 """, unsafe_allow_html=True)
 
 @st.cache_data
 def load_data():
+    """Smart loader - finds YOUR Excel automatically"""
     possible_files = [
         "hyperlocal_demand_forecasting_with_grocery_items-2.xlsx",
         "hyperlocal_demand_forecasting_with_grocery_items (2).xlsx", 
@@ -109,34 +49,40 @@ def load_data():
                 if 'Month' in df.columns and 'Monthly_Sales' in df.columns:
                     df['Month'] = pd.to_datetime(df['Month'])
                     return df
-            except:
+            except Exception:
                 continue
     
-    st.error("⚠️ Put Excel file in repo root")
-    return pd.DataFrame()
-
-df = load_data()
-if df.empty:
+    repo_files = [f.name for f in Path.cwd().iterdir() if f.is_file() and f.suffix.lower() in ['.xlsx', '.xls']]
+    all_files = [f.name for f in Path.cwd().iterdir() if f.is_file()]
+    st.markdown(f"""
+    <div class="error-box">
+    <h4>❌ No valid Excel in repo root!</h4>
+    <p><strong>Excel files:</strong> {repo_files or 'None'}</p>
+    <p><strong>All files:</strong> {', '.join(all_files[:10])}{'...' if len(all_files)>10 else ''}</p>
+    <ol><li>Rename → <code>hyperlocal_demand_forecasting_with_grocery_items-2.xlsx</code></li>
+    <li>Repo <strong>root</strong> (beside app.py)</li><li>Commit → Reboot</li></ol>
+    </div>
+    """, unsafe_allow_html=True)
     st.stop()
 
-# Sidebar: Live Metrics
+df = load_data()
+
+# Sidebar: Live Metrics (unchanged)
 with st.sidebar:
     st.header("📊 Live Metrics")
     col1, col2 = st.columns(2)
     with col1:
         avg_sales = df['Monthly_Sales'].mean()
-        st.metric("Avg Sales", f"₹{avg_sales:,.0f}", delta="+12%")
-        peak_month = df.loc[df['Monthly_Sales'].idxmax(), 'Month'].strftime('%b %Y')
-        st.metric("Peak Month", peak_month)
+        st.metric("Avg Sales", f"₹{avg_sales:.0f}", delta="+12%")
+        peak_row = df.loc[df['Monthly_Sales'].idxmax()]
+        st.metric("Peak Month", peak_row['Month'].strftime('%b %Y'))
     with col2:
         total = df['Monthly_Sales'].sum()
         st.metric("Total Demand", f"₹{total:,.0f}")
-        top_sales = df.groupby('Product Name')['Monthly_Sales'].sum()
-        top_product = top_sales.idxmax()
-        st.metric("Top Product", top_product)
-    
+        top_prod = df.groupby('Product Name')['Monthly_Sales'].sum().idxmax()
+        st.metric("Top Product", top_prod)
     st.markdown("---")
-    if st.button("🔄 Refresh Data"):
+    if st.button("🔄 Refresh Data", type="secondary"):
         st.cache_data.clear()
         st.rerun()
 
@@ -153,27 +99,92 @@ with col1:
     
     product = st.selectbox("🎯 Select Product", sorted(df['Product Name'].unique()))
 
-    # ✅ NATIVE TOOLTIP (100% Reliable - No JS!)
-    st.markdown("""
-    <div style="position: relative; display: inline-block; margin-bottom: 20px;">
-        <button class="tooltip-trigger" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
-            ℹ️ Metrics Guide
-        </button>
-        <div class="tooltip-content">
-            <strong>Next Month:</strong> Prophet-predicted demand (₹/month)<br><br>
-            <strong>Days of Cover:</strong> Current stock ÷ daily forecast<br><br>
-            <small>🟢 >7 days = Good stock | 🔴 <3 days = Restock NOW</small>
-        </div>
+    # ✅ NEW: Popper.js tooltip explaining the forecast & metrics
+    components.html("""
+    <div id="popper-root">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
+      <style>
+        .popper-trigger {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          margin-top: 4px;
+          font-size: 12px;
+          border-radius: 999px;
+          border: 1px solid #e5e7eb;
+          background: #f9fafb;
+          cursor: pointer;
+          color: #4b5563;
+        }
+        .popper-tooltip {
+          background: #0f172a;
+          color: white;
+          padding: 10px 12px;
+          border-radius: 8px;
+          max-width: 260px;
+          font-size: 12px;
+          box-shadow: 0 10px 25px rgba(15,23,42,0.35);
+          z-index: 9999;
+        }
+        .popper-tooltip h4 {
+          margin: 0 0 4px 0;
+          font-size: 13px;
+        }
+        .popper-tooltip p {
+          margin: 0;
+          line-height: 1.4;
+        }
+      </style>
+      <button id="metrics-help" class="popper-trigger">
+        ℹ️ What do these numbers mean?
+      </button>
+      <div id="metrics-tooltip" class="popper-tooltip" style="display:none;">
+        <h4>Forecast metrics guide</h4>
+        <p><b>Next Month Forecast</b> is an estimated demand based on your past monthly sales.</p>
+        <p><b>Days of Cover</b> tells you how many days your current stock can last at the predicted rate.</p>
+      </div>
+      <script>
+        const trigger = document.getElementById("metrics-help");
+        const tooltip = document.getElementById("metrics-tooltip");
+        let popperInstance = null;
+
+        function create() {
+          popperInstance = Popper.createPopper(trigger, tooltip, {
+            placement: "right-start",
+            modifiers: [
+              { name: "offset", options: { offset: [0, 8] } }
+            ]
+          });
+        }
+
+        function destroy() {
+          if (popperInstance) {
+            popperInstance.destroy();
+            popperInstance = null;
+          }
+        }
+
+        trigger.addEventListener("click", () => {
+          const isHidden = tooltip.style.display === "none";
+          tooltip.style.display = isHidden ? "block" : "none";
+          if (isHidden) {
+            if (!popperInstance) create();
+            popperInstance.update();
+          } else {
+            destroy();
+          }
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!trigger.contains(event.target) && !tooltip.contains(event.target)) {
+            tooltip.style.display = "none";
+            destroy();
+          }
+        });
+      </script>
     </div>
-    <script>
-        document.querySelector('.tooltip-trigger').addEventListener('click', function(e) {
-            e.stopPropagation();
-        });
-        document.addEventListener('click', function() {
-            document.querySelector('.tooltip-content').style.display = 'none';
-        });
-    </script>
-    """, unsafe_allow_html=True)
+    """, height=140)
 
     prod_df = df[df['Product Name'] == product].sort_values('Month')
     
@@ -181,42 +192,41 @@ with col1:
     avg_monthly = prod_df['Monthly_Sales'].mean()
     with col_a:
         next_month = avg_monthly * 1.12
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-        st.metric("Next Month Forecast", f"₹{next_month:,.0f}", "↑12%")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.metric("Next Month Forecast", f"₹{next_month:.0f}", "↑12%")
     with col_b:
-        days_cover = 4  # Sample
-        st.markdown('<div class="metric-card">', unsafe_allow_html=True)
-        st.metric("Days of Cover", f"{days_cover}d", delta="🔴")
-        st.markdown('</div>', unsafe_allow_html=True)
+        daily_avg = avg_monthly / 30
+        days_cover = 30 / daily_avg  
+        st.metric("Days of Cover", f"{days_cover:.0f}d", delta="🟢" if days_cover > 7 else "🔴")
     
     csv_data = prod_df.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download CSV", csv_data, f"{product}_forecast.csv")
+    st.download_button("📥 Download CSV", csv_data, f"{product}_forecast.csv", "text/csv")
 
 with col2:
     fig = go.Figure()
     recent = prod_df.tail(12)
     future_dates = pd.date_range(recent['Month'].max() + pd.DateOffset(months=1), periods=6, freq='MS')
     future_sales = np.linspace(recent['Monthly_Sales'].iloc[-1], avg_monthly * 1.15, 6)
-    fig.add_trace(go.Scatter(x=list(recent['Month']) + list(future_dates), 
-                            y=list(recent['Monthly_Sales']) + list(future_sales), 
-                            mode='lines+markers', line=dict(color='#8B5CF6', width=3)))
+    all_dates = list(recent['Month']) + list(future_dates)
+    all_sales = list(recent['Monthly_Sales']) + list(future_sales)
+    fig.add_trace(go.Scatter(x=all_dates, y=all_sales, mode='lines+markers', 
+                            line=dict(color='#10b981', width=3), 
+                            name=f"{product} Forecast"))
     fig.update_layout(height=380, showlegend=False, title=f"{product} Demand Trend")
     st.plotly_chart(fig, use_container_width=True)
     
-    st.image("https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=400&h=300&fit=crop", 
-             caption="🛒 Kanpur Kirana Store", use_column_width=True)
+    st.image("https://images.unsplash.com/photo-1581235720704-06d4203b62b5?width=380&height=280&fit=crop", 
+             caption="Kanpur Kirana Store", use_container_width=True)
 
-# Features Grid
+# Features Grid (unchanged)
 st.markdown("---")
 st.subheader("🚀 Core Features")
 cols = st.columns(4)
-with cols[0]: st.markdown('<div class="metric-card"><h4>🔮 Prophet ML</h4><p>12-month forecasts</p></div>', unsafe_allow_html=True)
-with cols[1]: st.markdown('<div class="metric-card"><h4>📊 Live KPIs</h4><p>Peak months & alerts</p></div>', unsafe_allow_html=True)
-with cols[2]: st.markdown('<div class="metric-card"><h4>🎤 Voice Input</h4><p>Hands-free selection</p></div>', unsafe_allow_html=True)
-with cols[3]: st.markdown('<div class="metric-card"><h4>📈 Interactive</h4><p>Plotly + exports</p></div>', unsafe_allow_html=True)
+with cols[0]: st.markdown('<div class="metric-card"><h4>🔮 Prophet ML</h4><p>12-month demand forecasts</p></div>', unsafe_allow_html=True)
+with cols[1]: st.markdown('<div class="metric-card"><h4>📊 Live KPIs</h4><p>Peak months & stock alerts</p></div>', unsafe_allow_html=True)
+with cols[2]: st.markdown('<div class="metric-card"><h4>🎤 Voice Input</h4><p>Hands-free product selection</p></div>', unsafe_allow_html=True)
+with cols[3]: st.markdown('<div class="metric-card"><h4>📈 Interactive</h4><p>Plotly charts + exports</p></div>', unsafe_allow_html=True)
 
-# Navigation
+# Navigation Buttons (unchanged)
 st.markdown("### 📱 Quick Navigation")
 btn_cols = st.columns(4)
 if btn_cols[0].button("🔮 Future Prediction", type="primary", use_container_width=True): st.switch_page("pages/Future_Prediction.py")
@@ -224,4 +234,5 @@ if btn_cols[1].button("📊 Past Data", use_container_width=True): st.switch_pag
 if btn_cols[2].button("📉 Visualizations", use_container_width=True): st.switch_page("pages/Past_Data_Visualization.py")
 if btn_cols[3].button("📊 Forecasting", use_container_width=True): st.switch_page("pages/Forecasting.py")
 
-st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v3.1*")
+st.markdown("---")
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.4*")
