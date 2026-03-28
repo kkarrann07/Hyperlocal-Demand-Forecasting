@@ -214,8 +214,9 @@ with col2:
     fig.update_layout(height=380, showlegend=False, title=f"{product} Demand Trend")
     st.plotly_chart(fig, use_container_width=True)
     
-    st.image("https://images.unsplash.com/photo-1581235720704-06d4203b62b5?width=380&height=280&fit=crop", 
-             caption="Kanpur Kirana Store", use_container_width=True)
+    # ✅ FIXED: Stable Unsplash URL for Kanpur Kirana Store
+    st.image("https://images.unsplash.com/photo-1581235720704-06d4203b62b5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80", 
+             caption="🛒 Kanpur Kirana Store", use_container_width=True)
 
 # Features Grid (unchanged)
 st.markdown("---")
@@ -235,4 +236,4 @@ if btn_cols[2].button("📉 Visualizations", use_container_width=True): st.switc
 if btn_cols[3].button("📊 Forecasting", use_container_width=True): st.switch_page("pages/Forecasting.py")
 
 st.markdown("---")
-st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.4*")
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.5*")
