@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
 from pathlib import Path
-import streamlit.components.v1 as components  # ✅ for Popper.js block
+import streamlit.components.v1 as components  # ✅ NEW: for Popper.js block
 
 st.set_page_config(
     page_title="🛒 Hyperlocal Demand Forecasting",
@@ -12,114 +12,24 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Premium CSS + Enhanced AOS Styles
+# Full Premium CSS
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;700&display=swap');
-
-/* Enhanced AOS Animations */
-[data-aos] { opacity: 0; transition-property: opacity, transform; transition-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-[data-aos].aos-animate { opacity: 1; }
-[data-aos="fade-up"] { transform: translate3d(0, 60px, 0); }
-[data-aos="fade-up"].aos-animate { transform: translate3d(0, 0, 0); }
-[data-aos="zoom-in"] { transform: scale(0.7) rotate(-2deg); }
-[data-aos="zoom-in"].aos-animate { transform: scale(1) rotate(0deg); }
-[data-aos="fade-left"] { transform: translate3d(-60px, 0, 0); }
-[data-aos="fade-left"].aos-animate { transform: translate3d(0, 0, 0); }
-[data-aos="fade-right"] { transform: translate3d(60px, 0, 0); }
-[data-aos="fade-right"].aos-animate { transform: translate3d(0, 0, 0); }
-[data-aos="flip-up"] { transform: perspective(400px) rotateX(-90deg); }
-[data-aos="flip-up"].aos-animate { transform: perspective(400px) rotateX(0deg); }
-
-/* Premium Glassmorphism */
-.metric-card { 
-    background: rgba(255,255,255,0.12); 
-    backdrop-filter: blur(16px); 
-    border: 1px solid rgba(255,255,255,0.18); 
-    border-radius: 20px; 
-    padding: 2rem; 
-    transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.08);
-}
-.metric-card:hover { 
-    transform: translateY(-8px) scale(1.02); 
-    box-shadow: 0 24px 64px rgba(0,0,0,0.15); 
-    border-color: rgba(16,185,129,0.3);
-}
 h1 { font-family: 'Poppins', sans-serif; color: #1e293b; }
+.metric-card { 
+    background: rgba(255,255,255,0.1); 
+    backdrop-filter: blur(10px); 
+    border: 1px solid rgba(255,255,255,0.2); 
+    border-radius: 16px; 
+    padding: 1.5rem; 
+    transition: all 0.3s ease; 
+}
+.metric-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
 .sidebar .metric { background: linear-gradient(135deg, #10b981, #059669); }
 .error-box { background: #fee2e2; padding: 1.5rem; border-radius: 12px; border-left: 5px solid #ef4444; }
-
-/* Popper.js Styles */
-.popper-trigger {
-    display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; 
-    margin: 12px 0; font-size: 13px; border-radius: 24px; border: 1px solid #e5e7eb; 
-    background: linear-gradient(135deg, #f8fafc, #f1f5f9); cursor: pointer; 
-    color: #4b5563; font-weight: 500; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-.popper-trigger:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); border-color: #10b981; }
-.popper-tooltip {
-    background: linear-gradient(135deg, #1e293b, #334155); color: white; padding: 16px 20px; 
-    border-radius: 16px; max-width: 300px; font-size: 13px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-    border: 1px solid rgba(255,255,255,0.1);
-}
-.popper-tooltip h4 { margin: 0 0 8px 0; font-size: 14px; font-weight: 600; }
-.popper-tooltip p { margin: 0 0 4px 0; line-height: 1.5; }
 </style>
 """, unsafe_allow_html=True)
-
-# ✅ ENHANCED: AOS + Popper.js (Conflict-Free)
-components.html("""
-<!-- AOS CDN -->
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-
-<!-- Popper.js CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
-
-<script>
-AOS.init({
-    duration: 900,
-    once: true,
-    offset: 100,
-    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-    disable: window.innerWidth < 1024
-});
-setTimeout(() => { AOS.refresh(); }, 150);
-window.addEventListener('resize', () => setTimeout(AOS.refresh, 100));
-
-// ✅ FIXED Popper.js - Isolated scope
-(function() {
-    let popperInstance = null;
-    const trigger = document.getElementById("metrics-help");
-    const tooltip = document.getElementById("metrics-tooltip");
-    
-    if (trigger && tooltip) {
-        function createPopper() {
-            if (popperInstance) popperInstance.destroy();
-            popperInstance = Popper.createPopper(trigger, tooltip, {
-                placement: "right-start",
-                modifiers: [{ name: "offset", options: { offset: [0, 12] } }]
-            });
-        }
-        
-        trigger.addEventListener("mouseenter", () => {
-            tooltip.style.display = "block";
-            createPopper();
-            setTimeout(() => popperInstance?.update(), 10);
-        });
-        
-        trigger.addEventListener("mouseleave", () => {
-            tooltip.style.display = "none";
-            if (popperInstance) {
-                popperInstance.destroy();
-                popperInstance = null;
-            }
-        });
-    }
-})();
-</script>
-""", height=20)
 
 @st.cache_data
 def load_data():
@@ -157,7 +67,7 @@ def load_data():
 
 df = load_data()
 
-# Sidebar: Live Metrics
+# Sidebar: Live Metrics (unchanged)
 with st.sidebar:
     st.header("📊 Live Metrics")
     col1, col2 = st.columns(2)
@@ -176,10 +86,9 @@ with st.sidebar:
         st.cache_data.clear()
         st.rerun()
 
-# Hero Section - Enhanced AOS
+# Hero Section
 col1, col2 = st.columns([2.2, 1])
 with col1:
-    st.markdown('<div data-aos="fade-up" data-aos-duration="1000">', unsafe_allow_html=True)
     st.title("🛒 Hyperlocal Demand Forecasting")
     st.markdown("""
     **Neighborhood-level grocery predictions** powered by Prophet ML.
@@ -187,26 +96,96 @@ with col1:
     - Reorder alerts + peak month detection  
     - Interactive Plotly charts + CSV exports
     """)
-    st.markdown('</div>', unsafe_allow_html=True)
     
     product = st.selectbox("🎯 Select Product", sorted(df['Product Name'].unique()))
 
-    # ✅ ORIGINAL Popper.js - Now Hover-Activated (Better UX)
+    # ✅ NEW: Popper.js tooltip explaining the forecast & metrics
     components.html("""
-    <div id="popper-root" data-aos="fade-up" data-aos-delay="100">
-        <button id="metrics-help" class="popper-trigger">
-            ℹ️ Metrics Guide
-        </button>
-        <div id="metrics-tooltip" class="popper-tooltip">
-            <h4>📈 Forecast Metrics</h4>
-            <p><b>Next Month:</b> Predicted demand from historical trends (+12% growth)</p>
-            <p><b>Days of Cover:</b> Stock duration at forecasted rate 🟢>7d = Safe</p>
-            <p><em>Hover for instant preview</em></p>
-        </div>
-    </div>
-    """, height=120)
+    <div id="popper-root">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
+      <style>
+        .popper-trigger {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          margin-top: 4px;
+          font-size: 12px;
+          border-radius: 999px;
+          border: 1px solid #e5e7eb;
+          background: #f9fafb;
+          cursor: pointer;
+          color: #4b5563;
+        }
+        .popper-tooltip {
+          background: #0f172a;
+          color: white;
+          padding: 10px 12px;
+          border-radius: 8px;
+          max-width: 260px;
+          font-size: 12px;
+          box-shadow: 0 10px 25px rgba(15,23,42,0.35);
+          z-index: 9999;
+        }
+        .popper-tooltip h4 {
+          margin: 0 0 4px 0;
+          font-size: 13px;
+        }
+        .popper-tooltip p {
+          margin: 0;
+          line-height: 1.4;
+        }
+      </style>
+      <button id="metrics-help" class="popper-trigger">
+        ℹ️ What do these numbers mean?
+      </button>
+      <div id="metrics-tooltip" class="popper-tooltip" style="display:none;">
+        <h4>Forecast metrics guide</h4>
+        <p><b>Next Month Forecast</b> is an estimated demand based on your past monthly sales.</p>
+        <p><b>Days of Cover</b> tells you how many days your current stock can last at the predicted rate.</p>
+      </div>
+      <script>
+        const trigger = document.getElementById("metrics-help");
+        const tooltip = document.getElementById("metrics-tooltip");
+        let popperInstance = null;
 
-    st.markdown('<div data-aos="flip-up" data-aos-delay="200">', unsafe_allow_html=True)
+        function create() {
+          popperInstance = Popper.createPopper(trigger, tooltip, {
+            placement: "right-start",
+            modifiers: [
+              { name: "offset", options: { offset: [0, 8] } }
+            ]
+          });
+        }
+
+        function destroy() {
+          if (popperInstance) {
+            popperInstance.destroy();
+            popperInstance = null;
+          }
+        }
+
+        trigger.addEventListener("click", () => {
+          const isHidden = tooltip.style.display === "none";
+          tooltip.style.display = isHidden ? "block" : "none";
+          if (isHidden) {
+            if (!popperInstance) create();
+            popperInstance.update();
+          } else {
+            destroy();
+          }
+        });
+
+        document.addEventListener("click", (event) => {
+          if (!trigger.contains(event.target) && !tooltip.contains(event.target)) {
+            tooltip.style.display = "none";
+            destroy();
+          }
+        });
+      </script>
+    </div>
+    """, height=140)
+
     prod_df = df[df['Product Name'] == product].sort_values('Month')
     
     col_a, col_b = st.columns(2)
@@ -221,10 +200,8 @@ with col1:
     
     csv_data = prod_df.to_csv(index=False).encode('utf-8')
     st.download_button("📥 Download CSV", csv_data, f"{product}_forecast.csv", "text/csv")
-    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
-    st.markdown('<div data-aos="zoom-in" data-aos-delay="300" data-aos-duration="1100">', unsafe_allow_html=True)
     fig = go.Figure()
     recent = prod_df.tail(12)
     future_dates = pd.date_range(recent['Month'].max() + pd.DateOffset(months=1), periods=6, freq='MS')
@@ -232,40 +209,30 @@ with col2:
     all_dates = list(recent['Month']) + list(future_dates)
     all_sales = list(recent['Monthly_Sales']) + list(future_sales)
     fig.add_trace(go.Scatter(x=all_dates, y=all_sales, mode='lines+markers', 
-                            line=dict(color='#10b981', width=4), 
+                            line=dict(color='#10b981', width=3), 
                             name=f"{product} Forecast"))
     fig.update_layout(height=380, showlegend=False, title=f"{product} Demand Trend")
     st.plotly_chart(fig, use_container_width=True)
     
-    st.markdown('<img src="https://images.unsplash.com/photo-1581235720704-06d4203b62b5?width=380&height=280&fit=crop" '
-                'style="border-radius: 16px; box-shadow: 0 12px 40px rgba(0,0,0,0.15);" '
-                'data-aos="fade-left" data-aos-delay="400">', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    st.image("https://images.unsplash.com/photo-1581235720704-06d4203b62b5?width=380&height=280&fit=crop", 
+             caption="Kanpur Kirana Store", use_container_width=True)
 
-# Enhanced Features Grid
-st.markdown('<div data-aos="fade-up" data-aos-delay="500">---</div>', unsafe_allow_html=True)
-st.markdown('<h3 data-aos="fade-up" data-aos-delay="550">🚀 Core Features</h3>', unsafe_allow_html=True)
-
+# Features Grid (unchanged)
+st.markdown("---")
+st.subheader("🚀 Core Features")
 cols = st.columns(4)
-with cols[0]: 
-    st.markdown('<div class="metric-card" data-aos="fade-up" data-aos-delay="600"><h4>🔮 Prophet ML</h4><p>12-month demand forecasts</p></div>', unsafe_allow_html=True)
-with cols[1]: 
-    st.markdown('<div class="metric-card" data-aos="fade-up" data-aos-delay="700"><h4>📊 Live KPIs</h4><p>Peak months & stock alerts</p></div>', unsafe_allow_html=True)
-with cols[2]: 
-    st.markdown('<div class="metric-card" data-aos="fade-up" data-aos-delay="800"><h4>🎤 Voice Input</h4><p>Hands-free product selection</p></div>', unsafe_allow_html=True)
-with cols[3]: 
-    st.markdown('<div class="metric-card" data-aos="fade-up" data-aos-delay="900"><h4>📈 Interactive</h4><p>Plotly charts + exports</p></div>', unsafe_allow_html=True)
+with cols[0]: st.markdown('<div class="metric-card"><h4>🔮 Prophet ML</h4><p>12-month demand forecasts</p></div>', unsafe_allow_html=True)
+with cols[1]: st.markdown('<div class="metric-card"><h4>📊 Live KPIs</h4><p>Peak months & stock alerts</p></div>', unsafe_allow_html=True)
+with cols[2]: st.markdown('<div class="metric-card"><h4>🎤 Voice Input</h4><p>Hands-free product selection</p></div>', unsafe_allow_html=True)
+with cols[3]: st.markdown('<div class="metric-card"><h4>📈 Interactive</h4><p>Plotly charts + exports</p></div>', unsafe_allow_html=True)
 
-# Navigation with AOS
-st.markdown('<div data-aos="fade-up" data-aos-delay="1000">', unsafe_allow_html=True)
+# Navigation Buttons (unchanged)
 st.markdown("### 📱 Quick Navigation")
 btn_cols = st.columns(4)
 if btn_cols[0].button("🔮 Future Prediction", type="primary", use_container_width=True): st.switch_page("pages/Future_Prediction.py")
 if btn_cols[1].button("📊 Past Data", use_container_width=True): st.switch_page("pages/Past_Data.py")
 if btn_cols[2].button("📉 Visualizations", use_container_width=True): st.switch_page("pages/Past_Data_Visualization.py")
 if btn_cols[3].button("📊 Forecasting", use_container_width=True): st.switch_page("pages/Forecasting.py")
-st.markdown('</div>', unsafe_allow_html=True)
 
-st.markdown('<div data-aos="fade-right" data-aos-delay="1100">'
-            '---<br><em>Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.6 ✨ AOS Enhanced</em>'
-            '</div>', unsafe_allow_html=True)
+st.markdown("---")
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.4*")
