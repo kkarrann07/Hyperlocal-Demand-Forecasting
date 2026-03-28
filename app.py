@@ -231,14 +231,14 @@ with cols[2]: st.markdown('<div class="metric-card"><h4>🎤 Voice Input</h4><p>
 with cols[3]: st.markdown('<div class="metric-card"><h4>📈 Interactive</h4><p>Plotly charts + exports</p></div>', unsafe_allow_html=True)
 
 # ──────────────────────────────────────────────
-# Navigation
+# ✅ Navigation — Forecasting replaced with Seller Dashboard
 # ──────────────────────────────────────────────
 st.markdown("### 📱 Quick Navigation")
 btn_cols = st.columns(4)
 if btn_cols[0].button("🔮 Future Prediction", type="primary", use_container_width=True): st.switch_page("pages/Future_Prediction.py")
 if btn_cols[1].button("📊 Past Data",          use_container_width=True): st.switch_page("pages/Past_Data.py")
 if btn_cols[2].button("📉 Visualizations",     use_container_width=True): st.switch_page("pages/Past_Data_Visualization.py")
-if btn_cols[3].button("📊 Forecasting",        use_container_width=True): st.switch_page("pages/Forecasting.py")
+if btn_cols[3].button("🏪 Seller Dashboard",   use_container_width=True): st.switch_page("pages/Seller_Dashboard.py")  # ✅ CHANGED
 
 st.markdown("---")
-st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.6*")
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.7*")
