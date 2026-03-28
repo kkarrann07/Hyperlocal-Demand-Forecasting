@@ -12,7 +12,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# 🌈 LIGHT PURPLE Palette (as requested)
+# 🌈 LIGHT PURPLE Palette
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
@@ -118,7 +118,7 @@ df = load_data()
 if df.empty:
     st.stop()
 
-# Sidebar: Live Metrics (REAL DATA)
+# Sidebar: Live Metrics
 with st.sidebar:
     st.header("📊 Live Metrics")
     col1, col2 = st.columns(2)
@@ -152,44 +152,68 @@ with col1:
     
     product = st.selectbox("🎯 Select Product", sorted(df['Product Name'].unique()))
 
-    # ✅ FIXED: FULL Metric Guide (bigger tooltip)
+    # ✅ FIXED POPPER.JS (Standalone + Reliable)
     components.html("""
-    <div style="margin-top: -8px;">
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.8/umd/popper.min.js"></script>
-      <button id="metrics-help" class="popper-trigger" style="margin-top: 0px;">
-        ℹ️ Metrics Guide
-      </button>
-      <div id="metrics-tooltip" class="popper-tooltip" style="display:none; white-space: normal;">
-        <strong>Next Month:</strong> Prophet-predicted demand (₹/month)<br><br>
-        <strong>Days of Cover:</strong> Current stock ÷ daily forecast<br><br>
-        <small>🟢 >7 days = Good stock | 🔴 <3 days = Restock NOW</small>
-      </div>
-      <script>
-        const trigger = document.getElementById("metrics-help");
-        const tooltip = document.getElementById("metrics-tooltip");
-        let popper = null;
-        trigger.onclick = () => {
-          const shown = tooltip.style.display !== "none";
-          tooltip.style.display = shown ? "none" : "block";
-          if (!shown) {
-            popper = Popper.createPopper(trigger, tooltip, {
-              placement: "right-start",
-              modifiers: [{name: "offset", options: {offset: [0, 10]}}]
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <script src="https://unpkg.com/@popperjs/core@2"></script>
+    </head>
+    <body>
+        <button id="metrics-help" class="popper-trigger" style="margin-top: 0px;">
+            ℹ️ Metrics Guide
+        </button>
+        <div id="metrics-tooltip" class="popper-tooltip" style="display:none; position: absolute;">
+            <strong>Next Month:</strong> Prophet-predicted demand (₹/month)<br><br>
+            <strong>Days of Cover:</strong> Current stock ÷ daily forecast<br><br>
+            <small>🟢 >7 days = Good stock | 🔴 <3 days = Restock NOW</small>
+        </div>
+        <script>
+            const trigger = document.getElementById('metrics-help');
+            const tooltip = document.getElementById('metrics-tooltip');
+            let popperInstance = null;
+            
+            trigger.addEventListener('click', function() {
+                const isVisible = tooltip.style.display !== 'none';
+                tooltip.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible) {
+                    popperInstance = Popper.createPopper(trigger, tooltip, {
+                        placement: 'right-start',
+                        modifiers: [
+                            {
+                                name: 'offset',
+                                options: {
+                                    offset: [12, 10],
+                                },
+                            },
+                            {
+                                name: 'preventOverflow',
+                                enabled: true,
+                            }
+                        ]
+                    });
+                } else {
+                    if (popperInstance) {
+                        popperInstance.destroy();
+                        popperInstance = null;
+                    }
+                }
             });
-            popper.update();
-          } else if (popper) {
-            popper.destroy(); popper = null;
-          }
-        };
-        document.onclick = (e) => {
-          if (!trigger.contains(e.target) && !tooltip.contains(e.target)) {
-            tooltip.style.display = "none";
-            if (popper) { popper.destroy(); popper = null; }
-          }
-        };
-      </script>
-    </div>
-    """, height=60)
+            
+            document.addEventListener('click', function(event) {
+                if (!trigger.contains(event.target) && !tooltip.contains(event.target)) {
+                    tooltip.style.display = 'none';
+                    if (popperInstance) {
+                        popperInstance.destroy();
+                        popperInstance = null;
+                    }
+                }
+            });
+        </script>
+    </body>
+    </html>
+    """, height=80)
 
     prod_df = df[df['Product Name'] == product].sort_values('Month')
     
@@ -201,8 +225,7 @@ with col1:
         st.metric("Next Month Forecast", f"₹{next_month:,.0f}", "↑12%")
         st.markdown('</div>', unsafe_allow_html=True)
     with col_b:
-        daily_avg = avg_monthly / 30
-        days_cover = 7  # Sample realistic value
+        days_cover = 7
         st.markdown('<div class="metric-card">', unsafe_allow_html=True)
         st.metric("Days of Cover", f"{days_cover}d", delta="🟢" if days_cover > 7 else "🔴")
         st.markdown('</div>', unsafe_allow_html=True)
@@ -241,4 +264,4 @@ if btn_cols[1].button("📊 Past Data", use_container_width=True): st.switch_pag
 if btn_cols[2].button("📉 Visualizations", use_container_width=True): st.switch_page("pages/Past_Data_Visualization.py")
 if btn_cols[3].button("📊 Forecasting", use_container_width=True): st.switch_page("pages/Forecasting.py")
 
-st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v2.9*")
+st.markdown("*Production Dashboard | Streamlit Cloud | Python + Prophet ML | v3.0*")
